@@ -1,0 +1,19 @@
+#!/bin/sh
+
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+
+cp -r 0_org 0
+
+# create the mesh
+blockMesh
+
+# I.C.
+funkySetFields -time 0
+
+# interFoam
+
+# for parallel running:
+decomposePar
+# runParallel $(getApplication)
+mpirun -np 4 interIsoFoam
