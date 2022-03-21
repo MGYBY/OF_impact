@@ -1,0 +1,73 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2106                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    inlet
+    {
+        type            groovyBC;
+	//valueExpression "(time()<distT) ? (pos().y>normalDepth ? 0 : 1) : ((startTime>(nNew*periodInt) && startTime<(nNew+0.5)*periodInt) ? (pos().y>fastDepth ? 0 : 1) : (pos().y>slowDepth ? 0 : 1))";
+	valueExpression "pos().z > normalDepth ? 0.0*normal() : vector(1.0,0.0,0.0)*((1.0+2.0*nIndex)/(1.0+nIndex))*normalVel*(1.0-pow((1.0-pos().z/normalDepth),((1.0+nIndex)/nIndex)))";
+
+	variables (
+			"normalDepth=0.001382279;"
+            "normalVel=0.18743922;"
+            "nIndex=1.0;"
+		);
+        value           uniform (0 0 0);
+    }
+
+    outlet
+    {
+        // type            inletOutlet;
+        // inletValue      uniform (0 0 0);
+        // value           uniform (0 0 0);
+
+        type    zeroGradient;
+    }
+
+    bottom
+    {
+        type            noSlip;
+    }
+
+    top
+    {
+        type            pressureInletOutletVelocity;
+        value           uniform (0 0 0);
+    }
+
+    back
+    {
+        // type            noSlip;
+        // type        slip;
+        type    zeroGradient;
+    }
+
+    blockFaces
+    {
+        type            noSlip;
+    }
+}
+
+
+// ************************************************************************* //

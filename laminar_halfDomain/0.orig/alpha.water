@@ -1,0 +1,67 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2106                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      alpha.water;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+    
+    inlet
+    {
+        type            groovyBC;
+	//valueExpression "(time()<distT) ? (pos().y>normalDepth ? 0 : 1) : ((startTime>(nNew*periodInt) && startTime<(nNew+0.5)*periodInt) ? (pos().y>fastDepth ? 0 : 1) : (pos().y>slowDepth ? 0 : 1))";
+	valueExpression "pos().z>normalDepth ? 0 : 1";
+
+	variables (
+			"normalDepth=0.001382279;"
+		);
+	value           uniform 0;
+    }
+
+    outlet
+    {
+        type            zeroGradient;
+        value           uniform 0;
+    }
+
+    bottom
+    {
+        type            zeroGradient;
+    }
+
+    top
+    {
+        type            inletOutlet;
+        inletValue      uniform 0;
+        value           uniform 0;
+    }
+
+    back
+    {
+        type            zeroGradient;
+    }
+
+    blockFaces
+    {
+        type            zeroGradient;
+    }
+}
+
+
+// ************************************************************************* //
