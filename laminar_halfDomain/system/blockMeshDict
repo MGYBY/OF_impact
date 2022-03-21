@@ -1,0 +1,227 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.7.1                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+convertToMeters 1;
+
+// normal depth
+depth 0.001382279;
+ndepth 24;
+// square block dimension
+width #calc "$depth*2.0";
+
+xn1  #calc "$width*4.0";
+xn2  #calc "$xn1+$width";
+xn3  #calc "$xn2+3.0*$width";
+
+yn1  #calc "$width*0.50";
+yn2  #calc "$width*3.00";
+// yn3  #calc "$width*6.0";
+
+zn  #calc "$depth*4.25";
+
+// alternatively, use value assignment for uneven grid
+hrf 2;
+// NX1 #calc "$xn1/$depth*$ndepth/$hrf";
+NX1 49;
+NX2 #calc "$width/$depth*$ndepth/$hrf";
+// NX3 #calc "($xn3-$xn2)/$depth*$ndepth/$hrf";
+NX3 49;
+
+NY1 #calc "$yn1/$depth*$ndepth/$hrf";
+NY2 #calc "($yn2-$yn1)/$depth*$ndepth/$hrf";
+// NY3 #calc "($yn3-$yn2)/$depth*$ndepth/$hrf";
+
+NZ #calc "3.50*$ndepth";
+
+// NX1 96;
+// NX2 24;
+// NX3 36;
+
+// NY1 24;
+// NY2 24;
+// NY3 24;
+
+//NZ #calc "4.0*$ndepth";
+
+//Cell expansion ratios
+// original CERs
+// xe_front 0.08428845675;
+// ye_bottom 0.04583554871;
+// ye_top 21.81870025;
+// xe_back 13.45427455; 
+
+// xe_front 0.02761;
+// ye_bottom 0.02832;
+// ye_top 3.555;
+// xe_back 3.505; 
+
+xe_front #calc "1.0/2.50";
+ye_bottom 1;
+ye_top 1;
+xe_back #calc "1.50"; 
+z_grading 4.0;
+
+vertices
+(
+    //Foward vertices (0-5)
+    (0 0 0) // 0
+    ($xn1 0 0) // 1
+    (0 $yn1 0) // 2
+    ($xn1 $yn1 0) // 3
+    (0 $yn2 0) // 4
+    ($xn1 $yn2 0) // 5
+
+    //Rear vertices (6-11)
+    ($xn2 0 0) // 6
+    ($xn3 0 0) // 7
+    ($xn2 $yn1 0) // 8
+    ($xn3 $yn1 0) // 9
+    ($xn2 $yn2 0) // 10
+    ($xn3 $yn2 0) // 11
+
+    //Z+ Foward vertices (12-17)
+    (0 0 $zn) // 12
+    ($xn1 0 $zn) // 13
+    (0 $yn1 $zn) // 14
+    ($xn1 $yn1 $zn) // 15
+    (0 $yn2 $zn) // 16
+    ($xn1 $yn2 $zn) // 17
+
+    //Z+ Rear vertices (18-23)
+    ($xn2 0 $zn) // 18
+    ($xn3 0 $zn) // 19
+    ($xn2 $yn1 $zn) // 20
+    ($xn3 $yn1 $zn) // 21
+    ($xn2 $yn2 $zn) // 22
+    ($xn3 $yn2 $zn) // 23
+);
+
+blocks
+(
+    //Forward blocks
+    hex (0 1 3 2 12 13 15 14) ($NX1 $NY1 $NZ) simpleGrading ($xe_front $ye_bottom $z_grading) // hex block 1
+    hex (2 3 5 4 14 15 17 16) ($NX1 $NY2 $NZ) simpleGrading ($xe_front 1 $z_grading) // hex block 2
+
+    //Middle block
+    hex (3 8 10 5 15 20 22 17) ($NX2 $NY2 $NZ) simpleGrading (1 $ye_bottom $z_grading) // hex block 3
+
+    //Rear blocks
+    hex (6 7 9 8 18 19 21 20) ($NX3 $NY1 $NZ) simpleGrading ($xe_back $ye_bottom $z_grading) // hex block 4
+    hex (8 9 11 10 20 21 23 22) ($NX3 $NY2 $NZ) simpleGrading ($xe_back 1 $z_grading) // hex block 5
+);
+
+edges
+(
+);
+
+boundary
+(
+    front
+    {
+        // type cyclic;
+	    // neighbourPatch back;
+        type symmetryPlane;
+        faces
+        (
+            (0 1 13 12)
+            (6 7 19 18)
+        );
+    }
+    
+    back
+    {
+        // type cyclic;
+	    // neighbourPatch front;
+        type patch;
+        faces
+        (
+            (4 5 17 16)
+            (5 10 22 17)
+            (10 11 23 22)
+        );
+    }
+
+    blockFaces
+    {
+        type wall;
+        faces
+        (
+            (1 3 15 13)
+            (3 8 20 15)
+            (6 8 20 18)
+        );
+    }
+    
+    inlet
+    {
+        type patch;
+        faces
+        (
+		(0 2 14 12)
+		(2 4 16 14)
+        );
+    }
+
+    outlet
+    {
+        type patch;
+        faces
+        (
+		(7 9 21 19)
+		(9 11 23 21)
+        );
+	
+    }
+
+    bottom
+    {
+        type wall;
+        faces
+        (
+    		//Forward blocks
+    		(0 1 3 2)
+    		(2 3 5 4)
+    		//Middle block
+    		(3 8 10 5)
+    		//Rear blocks
+    		(6 7 9 8) 
+    		(8 9 11 10) 
+        );
+    }
+
+    top
+    {
+        // type wall;
+        type patch;
+        faces
+        (
+    		//Forward blocks
+    		(12 13 15 14) 
+    		(14 15 17 16) 
+    		//Middle block
+    		(15 20 22 17)
+    		//Rear blocks
+    		(18 19 21 20) 
+    		(20 21 23 22) 
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //

@@ -1,0 +1,42 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// set IC based on 1D simulations
+expressions
+(
+        setWater{
+                field alpha.water;
+                keepPatches true;
+                variables (
+                        "normalDepth=0.001382279;"
+                        );
+                expression "pos().z<normalDepth ? 1 : 0";
+        }
+
+        setVelocity{
+                field U;
+                keepPatches true;
+                variables (
+                        "normalDepth=0.001382279;"
+                        "normalVel=0.18743922;"
+                        "nIndex=1.0;"
+                        );
+                expression "pos().z > normalDepth ? 0.0*vector(1.0,0.0,0.0) : vector(1.0,0.0,0.0)*((1.0+2.0*nIndex)/(1.0+nIndex))*normalVel*(1.0-pow((1.0-pos().z/normalDepth),((1.0+nIndex)/nIndex)))";
+        }
+);
+
+// ************************************************************************* //

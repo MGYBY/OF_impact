@@ -1,0 +1,93 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2106                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+simTime 5.0;
+normalDepth 0.001382279;
+centerX #calc "$normalDepth*4.0*2.0";
+centerY #calc "$normalDepth*3.0*2.0";
+
+application     interIsoFoam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         $simTime;
+
+deltaT          0.0002;
+
+writeControl    adjustable;
+
+writeInterval   0.020;
+
+purgeWrite      0;
+
+writeFormat     binary;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
+
+adjustTimeStep  yes;
+
+maxCo           0.90;
+
+maxAlphaCo      0.50;
+
+maxDeltaT       1;
+
+#sinclude   "sampling"
+
+libs (
+    //    "libsimpleFunctionObjects.so"
+        "libsimpleSwakFunctionObjects.so"
+        "libswakFunctionObjects.so"
+        "libgroovyBC.so"
+        "libOpenFOAM.so"
+        "libforces.so"
+    );
+
+functions
+{
+    forces
+    {
+        type forces;
+        functionObjectLibs ("libforces.so");
+        patches (blockFaces);
+        rho rhoInf;
+        rhoInf 1; // Reference density, fluid
+        CofR ($centerX $centerY 0.0010); // Origin for moment calculations
+        executeInterval     5;
+        writeControl timeStep;
+        // writeControl     writeTime;
+        writeInterval 5;
+        pName           p;
+        Uname           U;
+        // pName           pa;
+        // Uname           Ua;
+        log             true;
+    }
+};
+
+// ************************************************************************* //

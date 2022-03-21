@@ -1,0 +1,51 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2106                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      sampling;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+normalDepth 0.001382279;
+centerlineXCoord #calc "0.998*$normalDepth*4.0*2.0";
+centerlineYCoord #calc "1.00*$normalDepth*3.0*2.0";
+centerlineZCoordTop #calc "4.00*$normalDepth";
+
+functions
+{
+    sampleSets
+    {
+        type    sets;
+        libs    (sampling);
+
+        writeControl    writeTime;
+        // writeInterval 1;
+
+        setFormat           raw;
+        interpolationScheme cellPointFace;
+        fields ( alpha.water );
+
+        sets
+        (
+            gauge_1
+            {
+                type    face;
+                axis    z;
+                start   ($centerlineXCoord $centerlineYCoord 0.0);
+                end     ($centerlineXCoord $centerlineYCoord $centerlineZCoordTop);
+                nPoints 160;
+            }
+        );
+    }
+}
+
+
+// ************************************************************************* //
