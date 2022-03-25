@@ -45,12 +45,23 @@ divSchemes
     // div(phi,omega)   Gauss upwind;
     // div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
 
-    div(rhoPhi,U)   Gauss upwind;
-    div(phi,alpha)  Gauss vanLeer;
-    div(phi,omega)  Gauss upwind;
-    div(phi,k)  Gauss upwind;
-    div(phirb,alpha) Gauss linear;
+//     div(rhoPhi,U)   Gauss upwind;
+//     div(phi,alpha)  Gauss vanLeer;
+//     div(phi,omega)  Gauss upwind;
+//     div(phi,k)  Gauss upwind;
+//     div(phirb,alpha) Gauss linear;
+//     div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
+    
+    // maybe a more appropriate choice of schemes
+    div(rhoPhi,U)       Gauss linearUpwind grad(U);
+    div(phi,alpha)      Gauss vanLeer;
+    div(phirb,alpha)    Gauss linear;
+
+    "div\(phi,(k|omega)\)"      Gauss upwind;
     div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
+
+    div(phi,s)   Gauss vanLeer;
+    div(phirb,s) Gauss linear;
 }
 
 laplacianSchemes
