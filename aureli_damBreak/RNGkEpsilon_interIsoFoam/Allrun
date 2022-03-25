@@ -1,0 +1,47 @@
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+#------------------------------------------------------------------------------
+
+# ./Allrun.pre
+
+restore0Dir
+
+blockMesh
+
+runApplication -s 1 topoSet -dict system/topoSetDictZ1
+runApplication -s 1 refineMesh -dict system/refineMeshDictZ1 -overwrite
+
+runApplication -s 2 topoSet -dict system/topoSetDictZ2
+runApplication -s 2 refineMesh -dict system/refineMeshDictZ2 -overwrite
+
+runApplication -s 3 topoSet -dict system/topoSetDictZ3
+runApplication -s 3 refineMesh -dict system/refineMeshDictZ3 -overwrite
+
+runApplication -s 4 topoSet -dict system/topoSetDictBlock
+runApplication -s 4 refineMesh -dict system/refineMeshDictBlock -overwrite
+
+runApplication -s 5 topoSet -dict system/topoSetDictSideWalls
+runApplication -s 5 refineMesh -dict system/refineMeshDictSideWalls -overwrite
+
+runApplication -s 6 topoSet -dict system/topoSetDictBoundWalls
+runApplication -s 6 refineMesh -dict system/refineMeshDictBoundWalls -overwrite
+
+runApplication -s 7 topoSet -dict system/topoSetDictBlockVert
+runApplication -s 7 refineMesh -dict system/refineMeshDictBlockVert -overwrite
+
+# runApplication -s 6 topoSet -dict system/topoSetBC
+# runApplication -s 6 refineMesh -dict system/refineMeshDictBC -overwrite
+
+runApplication setFields
+#
+# # # # runApplication $(getApplication)
+#
+# # # # for parallel running:
+runApplication decomposePar
+
+runParallel renumberMesh -overwrite
+# # # # runParallel $(getApplication)
+mpirun -np 4 interIsoFoam
+
+#------------------------------------------------------------------------------
