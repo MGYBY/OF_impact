@@ -1,0 +1,229 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2106                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+/*
+vertices: 0~17 (Z- & Z+); blocks: 0~8.
+1. Half domain (symmetryPlane)
+2. Internal walls.
+3. Multi-grading. 
+*/
+
+scale   1;
+
+h0 0.10;
+zCoord  #calc "$h0*2.25";
+
+xCoord1 0.80;
+xCoord2 0.825;
+xCoord3 1.335;
+xCoord4 1.490;
+xCoord5 2.60;
+
+yCoord1 0.150;
+yCoord2 0.60;
+
+nz 36;
+nx1 64;
+nx2 2;
+nx3 43;
+nx4 14;
+nx5 88;
+ny1 12;
+ny2 36;
+erz 1.0;
+
+hr 1.0;
+nx1Ref #calc "round($nx1*$hr)";
+nx2Ref #calc "round($nx2*$hr)";
+nx3Ref #calc "round($nx3*$hr)";
+nx4Ref #calc "round($nx4*$hr)";
+nx5Ref #calc "round($nx5*$hr)";
+ny1Ref #calc "round($ny1*$hr)";
+ny2Ref #calc "round($ny2*$hr)";
+
+
+vertices
+(
+    // Z- plane
+    (0   0   0) // 0
+    (0  $yCoord1  0) // 1
+    (0  $yCoord2  0) // 2
+    ($xCoord1   0   0) // 3
+    ($xCoord1   $yCoord1   0) // 4
+    ($xCoord1   $yCoord2   0) // 5
+    ($xCoord2   0   0) // 6
+    ($xCoord2   $yCoord1   0) // 7
+    ($xCoord2   $yCoord2   0) // 8
+    ($xCoord3   0   0) // 9
+    ($xCoord3   $yCoord1   0) // 10
+    ($xCoord3   $yCoord2   0) // 11
+    ($xCoord4   0   0) // 12
+    ($xCoord4   $yCoord1   0) // 13
+    ($xCoord4   $yCoord2   0) // 14
+    ($xCoord5   0   0) // 15
+    ($xCoord5   $yCoord1   0) // 16
+    ($xCoord5   $yCoord2   0) // 17
+
+    // Z+ plane
+    (0   0   $zCoord) // 18
+    (0  $yCoord1  $zCoord) // 19
+    (0  $yCoord2  $zCoord) // 20
+    ($xCoord1   0   $zCoord) // 21
+    ($xCoord1   $yCoord1   $zCoord) // 22
+    ($xCoord1   $yCoord2   $zCoord) // 23
+    ($xCoord2   0   $zCoord) // 24
+    ($xCoord2   $yCoord1   $zCoord) // 25
+    ($xCoord2   $yCoord2   $zCoord) // 26
+    ($xCoord3   0   $zCoord) // 27
+    ($xCoord3   $yCoord1   $zCoord) // 28
+    ($xCoord3   $yCoord2   $zCoord) // 29
+    ($xCoord4   0   $zCoord) // 30
+    ($xCoord4   $yCoord1   $zCoord) // 13
+    ($xCoord4   $yCoord2   $zCoord) // 14
+    ($xCoord5   0   $zCoord) // 15
+    ($xCoord5   $yCoord1   $zCoord) // 16
+    ($xCoord5   $yCoord2   $zCoord) // 17
+);
+
+blocks
+(
+    // block 1
+    hex (0 3 4 1 18 21 22 19) ($nx1Ref $ny1Ref $nz) simpleGrading (1 1 $erz)
+    // block 2
+    hex (1 4 5 2 19 22 23 20) ($nx1Ref $ny2Ref $nz) simpleGrading (1 1 $erz)
+    // block 3
+    hex (3 6 7 4 21 24 25 22) ($nx2Ref $ny1Ref $nz) simpleGrading (1 1 $erz)
+    // block 4
+    hex (6 9 10 7 24 27 28 25) ($nx3Ref $ny1Ref $nz) simpleGrading (1 1 $erz)
+    // block 5
+    hex (7 10 11 8 25 28 29 26) ($nx3Ref $ny2Ref $nz) simpleGrading (1 1 $erz)
+    // block 6
+    hex (10 13 14 11 28 31 32 29) ($nx4Ref $ny2Ref $nz) simpleGrading (1 1 $erz)
+    // block 7
+    hex (12 15 16 13 30 33 34 31) ($nx5Ref $ny1Ref $nz) simpleGrading (1 1 $erz)
+    //block 8
+    hex (13 16 17 14 31 34 35 32) ($nx5Ref $ny2Ref $nz) simpleGrading (1 1 $erz)
+);
+
+edges
+(
+);
+
+boundary
+(
+    // inlet
+    // {
+    //     type patch;
+    //     faces
+    //     (
+    //         (0 1 19 18)
+    //         (1 2 20 19)
+    //     );
+    // }
+
+    front
+    {
+        // type cyclic;
+	    // neighbourPatch back;
+        type symmetryPlane;
+        faces
+        (
+            (0 3 21 18)
+            (3 6 24 21)
+            (6 9 27 24)
+            // (9 12 30 27)
+            (12 15 33 30)
+        );
+    }
+
+    sideWalls
+    {
+        type wall;
+        faces
+        (
+            // left walls
+            (0 1 19 18)
+            (1 2 20 19)
+            // mid walls
+            (4 5 23 22)
+            (4 7 25 22)
+            (8 7 25 26)
+            // (5 8 26 23)
+
+            (2 5 23 20)
+            (8 11 29 26)
+            (11 14 32 29)
+            (14 17 35 32)
+            (17 16 34 35)
+            (16 15 33 34)
+        );
+    }
+
+    // outlet
+    // {
+    //     type patch;
+    //     faces
+    //     (
+    //         (3 5 13 11)
+    //     );
+    // }
+
+    bottom
+    {
+        type wall;
+        faces
+        (
+            (0 3 4 1)
+            (1 4 5 2)
+            (3 6 7 4)
+            (6 9 10 7)
+            (7 10 11 8)
+            (10 13 14 11)
+            (12 15 16 13)
+            (13 16 17 14)
+        );
+    }
+
+    atmosphere
+    {
+        type patch;
+        faces
+        (
+            (18 21 22 19)
+            (19 22 23 20)
+            (21 24 25 22)
+            (24 27 28 25)
+            (25 28 29 26)
+            (28 31 32 29)
+            (30 33 34 31)
+            (31 34 35 32)
+        );
+    }
+
+    blockFaces
+    {
+        type wall;
+        faces
+        (
+            (9 10 28 27)
+            (10 13 31 28)
+            (12 13 31 30)
+        );
+    }
+);
+
+
+// ************************************************************************* //
