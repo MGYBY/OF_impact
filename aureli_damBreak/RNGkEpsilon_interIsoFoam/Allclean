@@ -13,3 +13,5 @@ rm -rf processor*
 rm log.*
 rm force_formatted 
 rm force.png
+
+rm -rf 1d_profil
