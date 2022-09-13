@@ -1,0 +1,312 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2106                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// application     interFoam;
+application     interIsoFoam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         5.0;
+
+deltaT          0.00002;
+
+writeControl    adjustable;
+
+writeInterval   0.05;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  6;
+
+writeCompression on;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
+
+adjustTimeStep  yes;
+
+maxCo           0.45;
+
+maxAlphaCo      0.45;
+
+maxDeltaT       1;
+
+functions
+{
+    forces
+    {
+        type forces;
+        functionObjectLibs ("libforces.so");
+        patches (blockFaces);
+        rho rhoInf;
+        rhoInf 1; // Reference density, fluid
+        CofR (0.0 0.0 0.0010); // Origin for moment calculations
+        executeInterval     1;
+        writeControl timeStep;
+        // writeControl     writeTime;
+        writeInterval 1;
+        pName           p;
+        Uname           U;
+        // pName           pa;
+        // Uname           Ua;
+        log             true;
+    }
+
+    heightGauge1
+    {
+        type swakExpression;
+        verbose true;
+        valueType set;
+        setName  hg1;
+        outputControl timeStep;
+        outputInterval 1;
+        aliases {
+            alpha1 alpha.water;
+        }
+        variables (
+            "aThres=0.50;"
+        );
+        // detect and return interface z coordinate
+        expression "mag(alpha1-aThres) <= min(mag(alpha1-aThres)) && alpha1>0.00001 ? pos().z : 0.0";
+        accumulations (
+            // min
+            // average
+            max
+        );
+        set {
+            type uniform;
+            // type lineUniform;
+            axis z;
+            start (0.9 0 0.0);
+            end (0.9 0 0.15);
+            nPoints 64;
+        }
+        interpolate true;
+        interpolationType cellPoint;
+        ignore_unimplemented_simpleFunctionObject::updateMesh true;
+    }
+
+    heightGauge2
+    {
+        type swakExpression;
+        verbose true;
+        valueType set;
+        setName  hg2;
+        outputControl timeStep;
+        outputInterval 1;
+        aliases {
+            alpha1 alpha.water;
+        }
+        variables (
+            "aThres=0.50;"
+        );
+        // detect and return interface z coordinate
+        expression "mag(alpha1-aThres) <= min(mag(alpha1-aThres)) && alpha1>0.00001 ? pos().z : 0.0";
+        accumulations (
+            // min
+            // average
+            max
+        );
+        set {
+            type uniform;
+            // type lineUniform;
+            axis z;
+            start (1.0 0 0.0);
+            end (1.0 0 0.15);
+            nPoints 64;
+        }
+        interpolate true;
+        interpolationType cellPoint;
+        ignore_unimplemented_simpleFunctionObject::updateMesh true;
+    }
+
+    heightGauge3
+    {
+        type swakExpression;
+        verbose true;
+        valueType set;
+        setName  hg3;
+        outputControl timeStep;
+        outputInterval 1;
+        aliases {
+            alpha1 alpha.water;
+        }
+        variables (
+            "aThres=0.50;"
+        );
+        // detect and return interface z coordinate
+        expression "mag(alpha1-aThres) <= min(mag(alpha1-aThres)) && alpha1>0.00001 ? pos().z : 0.0";
+        accumulations (
+            // min
+            // average
+            max
+        );
+        set {
+            type uniform;
+            // type lineUniform;
+            axis z;
+            start (1.2 0 0.0);
+            end (1.2 0 0.15);
+            nPoints 64;
+        }
+        interpolate true;
+        interpolationType cellPoint;
+        ignore_unimplemented_simpleFunctionObject::updateMesh true;
+    }
+
+    // // Froude number is obtained by p.p.
+    daUGauge1
+    {
+        type swakExpression;
+        verbose true;
+        valueType set;
+        setName  ug1;
+        outputControl timeStep;
+        outputInterval 1;
+        aliases {
+            alpha1 alpha.water;
+        }
+        // variables (
+        //     "aThres=0.50;"
+        // );
+        // detect and return interface z coordinate
+        expression "alpha1*mag(U)";
+        accumulations (
+            // min
+            average
+            // max
+        );
+        set {
+            type uniform;
+            axis z;
+            start (0.90 0 0.0);
+            end (0.90 0 0.15);
+            nPoints 64;
+        }
+        interpolate true;
+        interpolationType cellPoint;
+        ignore_unimplemented_simpleFunctionObject::updateMesh true;
+    }
+
+    daUGauge2
+    {
+        type swakExpression;
+        verbose true;
+        valueType set;
+        outputControl timeStep;
+        outputInterval 1;
+        setName  ug2;
+        aliases {
+            alpha1 alpha.water;
+        }
+        // variables (
+        //     "aThres=0.50;"
+        // );
+        // detect and return interface z coordinate
+        expression "alpha1*mag(U)";
+        accumulations (
+            // min
+            average
+            // max
+        );
+        set {
+            type uniform;
+            axis z;
+            start (1.0 0 0.0);
+            end (1.0 0 0.15);
+            nPoints 64;
+        }
+        interpolate true;
+        interpolationType cellPoint;
+        ignore_unimplemented_simpleFunctionObject::updateMesh true;
+    }
+
+    daUGauge3
+    {
+        type swakExpression;
+        verbose true;
+        valueType set;
+        outputControl timeStep;
+        outputInterval 1;
+        setName  ug3;
+        aliases {
+            alpha1 alpha.water;
+        }
+        // variables (
+        //     "aThres=0.50;"
+        // );
+        // detect and return interface z coordinate
+        expression "alpha1*mag(U)";
+        accumulations (
+            // min
+            average
+            // max
+        );
+        set {
+            type uniform;
+            axis z;
+            start (1.20 0 0.0);
+            end (1.20 0 0.15);
+            nPoints 64;
+        }
+        interpolate true;
+        interpolationType cellPoint;
+        ignore_unimplemented_simpleFunctionObject::updateMesh true;
+    }
+
+    runupGauge
+    {
+        type patchExpression;
+        patches (
+            blockFaces
+        );
+        verbose true;
+        outputControl timeStep;
+        outputInterval 1;
+        aliases {
+            alpha1 alpha.water;
+        }
+        expression "pos().x<=1.336 && alpha1<0.999 && alpha1>0.001 ? pos().z : 0.0";
+        // variables (
+        //     "aThres=0.50;"
+        // );
+        // detect and return interface z coordinate
+
+        accumulations (
+            // min
+            // average
+            max
+        );
+        ignore_unimplemented_simpleFunctionObject::updateMesh true;
+    }
+};
+
+libs (
+    "libOpenFOAM.so"
+    "libsimpleSwakFunctionObjects.so"
+    "libswakFunctionObjects.so"
+);
+
+// ************************************************************************* //
