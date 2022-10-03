@@ -5,3 +5,7 @@
 4. interIsoFoam
 5. RDF_PLIC
 6. swak4Foam for IC and BC from 1D simulations.
+7. enable hyprethread for parallelism:
+```
+mpirun --oversubscribe -np 12 interFoam -parallel
+```
