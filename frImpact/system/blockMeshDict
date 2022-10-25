@@ -1,0 +1,279 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.7.1                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+convertToMeters 1;
+
+// normal depth
+depth 0.00798;
+ndepth 20;
+// circular block dimension
+width #calc "$depth*1.0";
+
+LX #calc "$width*5.0";
+LY #calc "$width*2.55";
+LZ #calc "$depth*15.0";
+XB #calc "$width*1.5";
+
+LXMINUS #calc "$depth*224.0";
+
+// cylinder center
+// xCenterCoord #eval{$XB+$width/2.0};
+// zCenterCoord 0.0;
+
+xn1  #eval{$XB};
+xn2  #eval{$XB+$width};
+// xn3  #eval{$XB+$width+1.5*$width};
+xn3  #eval{1.0*$LX};
+xnMinux #eval{(-1.0)*$LXMINUS};
+
+yn1  #eval{$width*2.05};
+yn2  #eval{$LY*1.0};
+
+zn  #calc "$depth*2.00";
+znPlus #calc "$LZ*1.00";
+
+// alternatively, use value assignment for uneven grid
+// use a coarse mesh for now
+hrf 1.00;
+NX1 #calc "round($ndepth*$xn1/$depth/$hrf)";
+NX2 #calc "round($ndepth*($xn2-$xn1)/$depth/$hrf)";
+// NX3 #calc "round($ndepth*($xn3-$xn2)/$depth/$hrf)";
+// here we use non-uniform grid here
+NX3 40;
+NXMINUS #calc "round($ndepth*$LXMINUS/$depth/$hrf)";
+
+// here we use non-uniform grid here
+NY1 36;
+// NY1 #calc "round($ndepth*$yn1/$depth/$hrf)";
+NY2 #calc "round(($yn2-$yn1)/$depth*$ndepth/$hrf)";
+
+NZ 48;
+NZPLUS 37;
+
+z_grading_bottom 3.191697132;
+z_grading_top 13.502254;
+y_grading 0.7753964721;
+// x_back_grading 0.650414753;
+x_back_grading 1.5374805;
+
+vertices
+(
+    // Z0 plane
+    (0 0 0) // 0
+    ($xn1 0 0) // 1
+    ($xn2 0 0) // 2
+    ($xn3 0 0) // 3
+    (0 $yn1 0) // 4
+    ($xn1 $yn1 0) // 5
+    ($xn2 $yn1 0) // 6
+    ($xn3 $yn1 0) // 7
+    (0 $yn2 0) // 8
+    ($xn1 $yn2 0) // 9
+    ($xn2 $yn2 0) // 10
+    ($xn3 $yn2 0) // 11
+
+    // Z+ plane
+    (0 0 $zn) // 12
+    ($xn1 0 $zn) // 13
+    ($xn2 0 $zn) // 14
+    ($xn3 0 $zn) // 15
+    (0 $yn1 $zn) // 16
+    ($xn1 $yn1 $zn) // 17
+    ($xn2 $yn1 $zn) // 18
+    ($xn3 $yn1 $zn) // 19
+    (0 $yn2 $zn) // 20
+    ($xn1 $yn2 $zn) // 21
+    ($xn2 $yn2 $zn) // 22
+    ($xn3 $yn2 $zn) // 23
+
+    // ZPLUS plane
+    (0 0 $znPlus) // 24
+    ($xn1 0 $znPlus) // 25
+    ($xn2 0 $znPlus) // 26
+    ($xn3 0 $znPlus) // 27
+    (0 $yn1 $znPlus) // 28
+    ($xn1 $yn1 $znPlus) // 29
+    ($xn2 $yn1 $znPlus) // 30
+    ($xn3 $yn1 $znPlus) // 31
+    (0 $yn2 $znPlus) // 32
+    ($xn1 $yn2 $znPlus) // 33
+    ($xn2 $yn2 $znPlus) // 34
+    ($xn3 $yn2 $znPlus) // 35
+
+    // XMINUS zone
+    ($xnMinux 0 0) // 36
+    ($xnMinux $yn1 0) // 37
+    ($xnMinux $yn2 0) // 38
+    ($xnMinux 0 $zn) // 39
+    ($xnMinux $yn1 $zn) // 40
+    ($xnMinux $yn2 $zn) // 41
+);
+
+blocks
+(
+    // special attention must be paid to the local corrdinate system of every hex!
+    hex (0 1 5 4 12 13 17 16) ($NX1 $NY1 $NZ) simpleGrading (1 $y_grading $z_grading_bottom) // hex block 0
+    hex (1 2 6 5 13 14 18 17) ($NX2 $NY1 $NZ) simpleGrading (1 $y_grading $z_grading_bottom) // hex block 1
+    hex (2 3 7 6 14 15 19 18) ($NX3 $NY1 $NZ) simpleGrading ($x_back_grading $y_grading $z_grading_bottom) // hex block 2
+    hex (4 5 9 8 16 17 21 20) ($NX1 $NY2 $NZ) simpleGrading (1 1 $z_grading_bottom) // hex block 3
+    hex (6 7 11 10 18 19 23 22) ($NX3 $NY2 $NZ) simpleGrading ($x_back_grading 1 $z_grading_bottom) // hex block 4
+
+    hex (12 13 17 16 24 25 29 28) ($NX1 $NY1 $NZPLUS) simpleGrading (1 $y_grading $z_grading_top) // hex block 5
+    hex (13 14 18 17 25 26 30 29) ($NX2 $NY1 $NZPLUS) simpleGrading (1 $y_grading $z_grading_top) // hex block 6
+    hex (14 15 19 18 26 27 31 30) ($NX3 $NY1 $NZPLUS) simpleGrading ($x_back_grading $y_grading $z_grading_top) // hex block 7
+    hex (16 17 21 20 28 29 33 32) ($NX1 $NY2 $NZPLUS) simpleGrading (1 1 $z_grading_top) // hex block 8
+    hex (18 19 23 22 30 31 35 34) ($NX3 $NY2 $NZPLUS) simpleGrading ($x_back_grading 1 $z_grading_top) // hex block 9
+
+    hex (36 0 4 37 39 12 16 40) ($NXMINUS $NY1 $NZ) simpleGrading (1 $y_grading $z_grading_bottom) // hex block 10
+    hex (37 4 8 38 40 16 20 41) ($NXMINUS $NY2 $NZ) simpleGrading (1 1 $z_grading_bottom) // hex block 11
+);
+
+edges
+(
+);
+
+boundary
+(
+    front
+    {
+        // type cyclic;
+	    // neighbourPatch back;
+        type symmetryPlane;
+        faces
+        (
+            (8 9 21 20)
+            (10 11 23 22)
+            (20 21 33 32)
+            (22 23 35 34)
+
+            (38 8 20 41)
+        );
+    }
+
+    back
+    {
+        // type cyclic;
+	    // neighbourPatch front;
+        // type patch;
+        type symmetryPlane;
+        faces
+        (
+            (0 1 13 12)
+            (1 2 14 13)
+            (2 3 15 14)
+
+            (12 13 25 24)
+            (13 14 26 25)
+            (14 15 27 26)
+
+            (36 0 12 39)
+        );
+    }
+
+    blockFaces
+    {
+        type wall;
+        faces
+        (
+            (5 9 21 17)
+            (5 6 18 17)
+            (6 10 22 18)
+
+            (17 21 33 29)
+            (17 18 30 29)
+            (18 22 34 30)
+        );
+    }
+
+    inlet
+    {
+        type patch;
+        faces
+        (
+		// (0 4 16 12)
+		// (4 8 20 16)
+
+        (36 37 40 39)
+        (37 38 41 40)
+        );
+    }
+
+    outlet
+    {
+        type patch;
+        faces
+        (
+		(3 7 19 15)
+		(7 11 23 19)
+
+        (15 19 31 27)
+        (19 23 35 31)
+        );
+
+    }
+
+    bottom
+    {
+        type wall;
+        faces
+        (
+            (0 1 5 4)
+            (1 2 6 5)
+            (2 3 7 6)
+            (6 7 11 10)
+            (4 5 9 8)
+
+            (36 0 4 37)
+            (37 4 8 38)
+        );
+    }
+
+    atmosphere
+    {
+        // type wall;
+        type patch;
+        faces
+        (
+            // (12 13 17 16)
+            // (13 14 18 17)
+            // (14 15 19 18)
+            // (16 17 21 20)
+            // (18 19 23 22)
+
+            (24 25 29 28)
+            (28 29 33 32)
+            (25 26 30 29)
+            (26 27 31 30)
+            (30 31 35 34)
+
+            (12 16 28 24)
+            (16 20 32 28)
+
+            (39 12 16 40)
+            (40 16 20 41)
+        );
+    }
+);
+
+// boundary
+// (
+// );
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //

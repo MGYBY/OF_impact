@@ -1,0 +1,121 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// set IC based on 1D simulations
+expressions
+(
+        alpha
+        {
+                field alpha.water; //field to initialise
+                fields
+                (
+                        z alpha
+                );
+                lookuptables (
+                {
+                        name inletprofilealpha;
+                        outOfBounds clamp;
+                        file "./1d_profil/alpha.water.xy";
+                }
+                );
+                expression "inletprofilealpha(pos().z)";
+                keepPatches 1;
+        }
+
+        waterVelocity
+        {
+                field U; //field to initialise
+                fields
+                (
+                        z U
+                );
+                lookuptables (
+                {
+                        name inletprofilevelx;
+                        outOfBounds clamp;
+                        file "./1d_profil/U0.xy";
+                }
+                );
+                // expression "inletprofilealpha(pos().y)";
+                expression "vector(inletprofilevelx(pos().z),0.0,0.0)";
+                keepPatches 1;
+        }
+
+        initPressure
+        {
+                field p_rgh; //field to initialise
+                // expression "inletprofilealpha(pos().y)";
+                expression "0.0";
+                keepPatches 1;
+        }
+
+        k
+        {
+                field k; //field to initialise
+                fields
+                (
+                        z k
+                );
+                lookuptables (
+                {
+                        name inletprofilek;
+                        outOfBounds clamp;
+                        file "./1d_profil/k.xy";
+                }
+                );
+                expression "inletprofilek(pos().z)";
+                keepPatches 1;
+        }
+
+        nut
+        {
+                field nut; //field to initialise
+                fields
+                (
+                        z nut
+                );
+                lookuptables (
+                {
+                        name inletprofilenut;
+                        outOfBounds clamp;
+                        file "./1d_profil/nut.xy";
+                }
+                );
+                expression "inletprofilenut(pos().z)";
+                keepPatches 1;
+        }
+
+        omega
+        {
+                field omega; //field to initialise
+                fields
+                (
+                        z omega
+                );
+                lookuptables (
+                {
+                        name inletprofileomega;
+                        outOfBounds clamp;
+                        file "./1d_profil/omega.xy";
+                }
+                );
+                expression "inletprofileomega(pos().z)";
+                keepPatches 1;
+        }
+);
+
+// ************************************************************************* //
