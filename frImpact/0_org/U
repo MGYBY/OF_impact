@@ -1,0 +1,78 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2106                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    inlet
+    {
+        type            groovyBC;
+        refValue        uniform   (0 0 0); 
+        // valueExpression "vector(inletprofileux(pos().z),0,0)";
+        valueExpression "time()<=(distPeriod/2.0) ? vector(((inletprofileux(pos().z))*(1.0+distAmp*sin(2.0*piVal*time()/distPeriod))), 0, 0) : vector(inletprofileux(pos().z), 0, 0)";
+        gradientExpression "vector(0,0,0)";
+        fractionExpression "1";
+        evaluateDuringConstruction 1;
+        variables       (
+            "distPeriod=0.933;"
+            "distAmp=0.20;"
+            "piVal=3.1415926;"
+        );
+        timelines       (
+    );
+        lookuptables    (
+        {
+            name            inletprofileux;
+            file        "./1d_profil/U0.xy";
+            outOfBounds     clamp;
+        }
+    );
+    }
+
+    outlet
+    {
+        type    zeroGradient;
+    }
+
+    // back
+    // {
+    //     type    zeroGradient;
+    // }
+
+    bottom
+    {
+        type            noSlip;
+    }
+
+    blockFaces
+    {
+        type            noSlip;
+    }
+
+    atmosphere
+    {
+        type            pressureInletOutletVelocity;
+        value           uniform (0 0 0);
+    }
+}
+
+
+// ************************************************************************* //
