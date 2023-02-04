@@ -49,10 +49,19 @@ boundaryField
         );
     }
 
+  // supercritical flow
     rightWall
     {
         type    zeroGradient;
     }
+    
+   // subscritical flow
+   // rightWall
+   // {
+   // 	type            inletOutlet;
+   //	inletValue      uniform (0 0 0);
+   //	value           $internalField;
+   //	}
 
     lowerWall
     {
