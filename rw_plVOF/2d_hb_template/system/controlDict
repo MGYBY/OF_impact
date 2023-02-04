@@ -1,0 +1,115 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  5                                     |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     interIsoFoam;
+// application     interIsoCyclicFoam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         10;
+
+deltaT          0.001;
+
+writeControl    adjustableRunTime;
+
+writeInterval   0.02;
+
+purgeWrite      0;
+
+writeFormat     binary;
+
+writePrecision  6;
+
+writeCompression on;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
+
+adjustTimeStep  on;
+
+maxCo           0.45;
+maxAlphaCo      0.45;
+
+maxDeltaT       0.5;
+
+
+functions
+{
+    heightRecord1
+    {
+        type swakExpression;
+        verbose true;
+        valueType internalField;
+        setName  hts1;
+        outputControl timeStep;
+        outputInterval 25;
+        aliases {
+            alpha1 alpha.water;
+        }
+        variables (
+            "aThres=0.15;"
+        );
+        // detect and return interface z coordinate
+        expression "mag(alpha1-aThres) <= min(mag(alpha1-aThres)) && alpha1>0.00001 ? pos().y : 0.0";
+        accumulations (
+            // min
+            // average
+            max
+        );
+    }
+
+    // velAve
+    // {
+    //     type swakExpression;
+    //     verbose true;
+    //     valueType internalField;
+    //     setName  va1;
+    //     outputControl timeStep;
+    //     outputInterval 25;
+    //     aliases {
+    //         alpha1 alpha.water;
+    //     }
+    //     variables (
+    //         "aThres=0.001;"
+    //     );
+    //     mask "alpha1>aThres";
+    //     // detect and return interface z coordinate
+    //     expression "alpha1*mag(U)";
+    //     // expression "alpha1";
+    //     accumulations (
+    //         // min
+    //         average
+    //         // max
+    //     );
+    // }
+}
+
+
+libs (
+    "libOpenFOAM.so"
+    "libsimpleSwakFunctionObjects.so"
+    "libswakFunctionObjects.so"
+    "libgroovyBC.so"
+);
+

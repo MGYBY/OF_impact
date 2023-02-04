@@ -1,0 +1,115 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  5                                     |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+normalDepth 0.00160556;
+lx #calc "$normalDepth*1000.0";
+ly #calc "$normalDepth*3.50";
+
+nx #calc "round($lx/$normalDepth)";
+ny #calc "round($ly/$normalDepth)";
+nz #calc "round(1.0)";
+
+// for now, 17 cells along ND
+nNd 25.0;
+
+deltaCell #calc "$normalDepth/25.0";
+lz #calc "$deltaCell";
+
+nx #calc "round($lx/$normalDepth*$nNd)";
+ny #calc "round($ly/$normalDepth*$nNd)";
+nz #calc "round($lz/$normalDepth*$nNd)";
+
+convertToMeters 1;
+
+vertices
+(
+    // back plane
+    (0 0 0) // 0
+    ($lx 0 0) // 1
+    ($lx $ly 0) // 2 
+    (0 $ly 0) // 3
+    // front plane
+    (0 0 $lz)
+    ($lx 0 $lz)
+    ($lx $ly $lz)
+    (0 $ly $lz)
+
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) ($nx $ny $nz) simpleGrading (1 1 1)
+  
+);
+
+edges
+(
+);
+
+boundary
+(
+    inflow
+    {
+        type patch;
+        faces
+        (
+            (0 4 7 3)
+        );
+    }
+    rightWall
+    {
+        type patch;
+        faces
+        (
+            (1 5 6 2)
+          
+        );
+    }
+    lowerWall
+    {
+        /*type nutkRoughWallFunction;
+        Ks              uniform 0;
+        Cs              uniform 0.5;*/
+        type wall;
+        faces
+        (
+            (0 1 5 4)
+        );
+    }
+    atmosphere
+    {
+        type patch;
+        faces
+        (
+            (3 2 6 7)
+        );
+    }
+    frontAndBack
+    {
+        type empty;
+        faces
+        (
+            (0 1 2 3)
+            (4 5 6 7)
+   
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //
