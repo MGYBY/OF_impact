@@ -1,0 +1,75 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2106                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    arch        "LSB;label=32;scalar=64";
+    class       volVectorField;
+    location    "0";
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    inflow
+    {
+        type            groovyBC;
+        value           uniform (0 0 0);
+        valueExpression "(time()<=distPeriod/2.0) ? ((pos().y<=distDepth) ? velProf*vector(1,0,0) : surfVel*vector(1,0,0)) : ((pos().y<=nd) ? normalProf*vector(1,0,0) : normalSurfVel*vector(1,0,0))";
+        // valueExpression "(nv)*vector(1,0,0)";
+        variables (
+            "nd=0.00160556;"
+			"nv=0.0560736;"
+            "channelSin=0.06;"
+            "plN=0.40;"
+            "distPeriod=2.0*nd/channelSin/nv;"
+            "distAmp=0.250;"
+            "piVal=3.1415926;"
+            "expFactor=(1.0+plN)/plN;"
+            "FROUDE=0.4472;"
+            "GRAV=9.81;"
+            "distDepth=nd*(1.0+distAmp*sin(2.0*piVal*time()/distPeriod));"
+            "normalPos=time()>distPeriod/2.0 ? mag(1.0-(pos().y/nd)) : mag(1.0-(pos().y/distDepth));"
+            // "distDepth=nd*(1.0+distAmp*sin(2.0*piVal*time()/distPeriod));"
+            "velProf=(1.0+2.0*plN)/(1.0+plN)*(FROUDE*sqrt(GRAV*sqrt(1.0-channelSin*channelSin)*distDepth))*(1.0-pow(normalPos, expFactor));"
+            "surfVel=(1.0+2.0*plN)/(1.0+plN)*(FROUDE*sqrt(GRAV*sqrt(1.0-channelSin*channelSin)*distDepth));"
+            "normalProf=(1.0+2.0*plN)/(1.0+plN)*(nv)*(1.0-pow(normalPos, expFactor));"
+            "normalSurfVel=(1.0+2.0*plN)/(1.0+plN)*(nv);"
+        );
+    }
+
+    rightWall
+    {
+        type    zeroGradient;
+    }
+
+    lowerWall
+    {
+        type            noSlip;
+    }
+
+    atmosphere
+    {
+        type            pressureInletOutletVelocity;
+        value           uniform (0 0 0);
+    }
+    
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+
+// ************************************************************************* //
