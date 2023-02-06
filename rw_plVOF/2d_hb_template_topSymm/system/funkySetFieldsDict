@@ -1,0 +1,66 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+expressions
+(
+        depthField
+        {
+                field alpha.water; //field to initialise
+                keepPatches true;
+                expression "(pos().y<=nd) ? 1.0 : 0.0";
+                variables (
+                        "nd=0.00160556;"
+                );
+        }
+
+        pHydro
+        {
+                field p; //field to initialise
+                // hydrostatic pressure for IC
+                expression "(pos().y<=nd) ? redGrav*densityFluid*(nd-pos().y) : 0.0-redGrav*densityAir*(pos().y-nd)";
+                // condition "pos().y<=max(pos().y)";
+                keepPatches true;
+                variables (
+                        "nd=0.00160556;"
+                        "densityFluid=1120.0;"
+                        "densityAir=1.225;"
+                        "grav=9.81;"
+                        "slope=0.06;"
+                        "redGrav=grav*sqrt(1-slope*slope);"
+                );
+        }
+
+        velocityField
+	{
+                field U;
+                keepPatches true;
+                create false;
+                expression "(pos().y<=nd) ? velProf*vector(1,0,0) : ((1.0+2.0*plN)/(1.0+plN)*nv)*vector(1,0,0)";
+                // expression "nv*vector(1,0,0)";
+                variables (
+			"nd=0.00160556;"
+			"nv=0.0560736;"
+                        "plN=0.40;"
+                        "expFactor=(1.0+plN)/plN;"
+                        // "normalPos=1.0-(pos().y/nd);"
+                        "normalPos=mag(1.0-(pos().y/nd));"
+                        "velProf=(1.0+2.0*plN)/(1.0+plN)*nv*(1.0-pow(normalPos, expFactor));"
+		);
+        }
+);
+
+// ************************************************************************* //
