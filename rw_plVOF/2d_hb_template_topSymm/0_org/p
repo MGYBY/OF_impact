@@ -1,0 +1,68 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  6
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      p_rgh;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [1 -1 -2 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    rightWall
+    {
+        type            zeroGradient;
+    }
+    
+//     atmosphere
+//     {
+//         type            totalPressure;
+//         p0              uniform 0;
+//     }
+
+    // hydrostatic pressure dist.
+    inflow
+    {
+        type            groovyBC;
+        value           uniform 0;
+        valueExpression "(time()<=distPeriod/2.0) ? ((pos().y<=distDepth) ? redGrav*densityFluid*(distDepth-pos().y) : 0.0-redGrav*densityAir*(pos().y-distDepth)) : ((pos().y<=nd) ? redGrav*densityFluid*(nd-pos().y) : 0.0-redGrav*densityAir*(pos().y-nd))";
+        // valueExpression "(nv)*vector(1,0,0)";
+        variables (
+            "nd=0.00160556;"
+			"nv=0.0560736;"
+            "channelSin=0.06;"
+            // "plN=0.40;"
+            "distPeriod=2.0*nd/channelSin/nv;"
+            "distAmp=0.250;"
+            "piVal=3.1415926;"
+            "GRAV=9.81;"
+            "densityFluid=1120.0;"
+            "densityAir=1.225;"
+            "redGrav=GRAV*sqrt(1-channelSin*channelSin);"
+            "distDepth=nd*(1.0+distAmp*sin(2.0*piVal*time()/distPeriod));"
+        );
+    }
+
+    ".*"
+    {
+        type            fixedFluxPressure;
+        value           uniform 0;
+    }
+}
+
+
+// ************************************************************************* //
