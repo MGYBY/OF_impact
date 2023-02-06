@@ -1,0 +1,28 @@
+#!/bin/sh
+
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+
+cp -r 0_org 0
+
+# create the mesh
+blockMesh
+
+# setFields
+
+# # I.C.
+funkySetFields -time 0
+
+# exit
+
+# # # # # for parallel running:
+runApplication decomposePar
+
+# runParallel renumberMesh -overwrite
+#renumberMesh -overwrite
+# runApplication renumberMesh -overwrite
+
+# # # # # runParallel $(getApplication)
+# mpirun -np 6 interIsoFoam
+# mpirun --oversubscribe -np 10 interFoam -parallel
+mpirun --oversubscribe -np 10 interCyclicFoam -parallel
