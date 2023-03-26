@@ -1,0 +1,82 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2106                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    arch        "LSB;label=32;scalar=64";
+    class       volScalarField;
+    location    "0";
+    object      alpha.water;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    inflow
+    {
+        type            groovyBC;
+        refValue        uniform 0;
+        refGradient     uniform 0;
+        valueFraction   uniform 1;
+        value           uniform 0;
+        valueExpression "time()<=(distPeriod/2.0) ? (distDepth<(pos().y-cellDelta/2.0) ? 0.0 : (distDepth>(pos().y+cellDelta/2.0) ? 1.0 : (distDepth-(pos().y-cellDelta/2.0))/cellDelta)) : inletprofilealpha(pos().y)";
+        gradientExpression "0";
+        fractionExpression "1";
+        evaluateDuringConstruction 1;
+        variables       (
+            "normalDepth=0.00798;"
+            "cellDelta=normalDepth/36.5;"
+            "distPeriod=0.933;"
+            "distAmp=0.20;"
+            "piVal=3.1415926;"
+            "distDepth=normalDepth*(1.0+distAmp*sin(2.0*piVal*time()/distPeriod));"
+        );
+        timelines       (
+    );
+        lookuptables    (
+    {
+        name            inletprofilealpha;
+        file            "./1d_profil/alpha.water.xy";
+        outOfBounds     clamp;
+    }
+    );
+    }
+
+    rightWall
+    {
+        type            zeroGradient;
+        value           uniform 0;
+    }
+
+    lowerWall
+    {
+        type            zeroGradient;
+    }
+
+    atmosphere
+    {
+        type            inletOutlet;
+        inletValue      uniform 0;
+        value           uniform 0;
+    }
+    
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+
+// ************************************************************************* //
