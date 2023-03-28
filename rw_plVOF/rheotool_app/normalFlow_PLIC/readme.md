@@ -2,4 +2,4 @@ PLIC (or MPLIC) free-surface capturing method for 2D normal-flow (fully-develope
 
 High density and viscosity ratio case of JJR mud.
 
-![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
+![alt text](https://github.com/MGYBY/OF_impact/blob/main/rw_plVOF/rheotool_app/normalFlow_PLIC/profile.jpeg?raw=true)
