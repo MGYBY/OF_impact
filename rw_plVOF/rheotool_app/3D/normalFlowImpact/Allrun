@@ -1,0 +1,30 @@
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+#------------------------------------------------------------------------------
+
+# ./Allrun.pre
+
+# restore0Dir
+cp -r 0_org 0
+
+blockMesh
+
+renumberMesh -noFields -overwrite
+
+# I.C.
+funkySetFields -time 0
+
+# exit
+
+# #
+# # # # # runApplication $(getApplication)
+# #
+# # # # # for parallel running:
+runApplication decomposePar
+
+runApplication postProcess
+
+mpirun --oversubscribe -np 10 rheoInterFoam -parallel
+
+#------------------------------------------------------------------------------
