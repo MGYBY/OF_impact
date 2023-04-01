@@ -1,0 +1,135 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2106                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// application     interFoam;
+// application     interIsoFoam;
+application     rheoInterFoam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         30.0;
+
+deltaT          0.00001;
+
+writeControl    adjustableRunTime;
+
+writeInterval   0.50;
+
+purgeWrite      0;
+
+writeFormat     binary;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
+
+adjustTimeStep  yes;
+
+// maxCo           0.45;
+//
+// maxAlphaCo      0.45;
+
+maxCo           0.475;
+
+maxAlphaCo      0.475;
+
+maxDeltaT       1;
+
+libs (
+    //    "libsimpleFunctionObjects.so"
+        "libsimpleSwakFunctionObjects.so"
+        "libswakFunctionObjects.so"
+        "libgroovyBC.so"
+        "libOpenFOAM.so"
+        "libforces.so"
+    );
+
+functions
+{
+    outputForce
+    {
+        functionObjectLibs ( "libutilityFunctionObjects.so" );
+        type            coded;
+        redirectType    calCd;
+        writeControl    timeStep;
+        writeInterval   1;
+        enabled         yes;
+        codeWrite       #{
+
+          // User-input
+            scalar WIDTH_(0.38093709); // Obs width
+            scalar ND(0.38093709);
+            scalar U0(3.3915176); // far-field velocity 
+            scalar FLUIDDENSITY(2130.0); // fluid density
+
+          // Lookup/create variable 
+
+        const volVectorField& U = mesh().lookupObject<volVectorField>("U");
+        const volScalarField& p = mesh().lookupObject<volScalarField>("p");
+        const volScalarField& alphaWater = mesh().lookupObject<volScalarField>("alpha.water");
+        //    const dictionary& constDict = mesh().lookupObject<IOdictionary>("constitutiveProperties");
+
+        const volScalarField& eta = mesh().lookupObject<volScalarField>("eta.water");
+
+            label cyl = mesh().boundaryMesh().findPatchID("blockFaces");
+            scalarList list;
+    
+          // Compute cd
+
+            volTensorField L(fvc::grad(U));
+
+            volSymmTensorField F(symm( L + L.T() ) * eta * alphaWater - p * symmTensor::I * FLUIDDENSITY * alphaWater);
+
+            vector Fpatch = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & F.boundaryField()[cyl] );
+            
+           Fpatch *= 2.0/(0.50* FLUIDDENSITY * U0 * U0 * WIDTH_ * ND); // symmetry  
+
+           list.append(mesh().time().value());  // Time (col 0)  
+           list.append(Fpatch.x());             // Cd   (col 1)  
+
+           // Write data
+            string comsh;           
+            string filename("Cd.txt");
+            std::stringstream doub2str; doub2str.precision(12);
+
+            comsh = "./writeData " + filename;
+            forAll(list, id)
+            {
+                doub2str.str(std::string());
+                doub2str << list[id]; 
+                comsh += " " + doub2str.str();
+            }
+
+            if (Pstream::master())
+            {
+                system(comsh);
+            }
+
+        #};
+    }
+}
+
+// ************************************************************************* //

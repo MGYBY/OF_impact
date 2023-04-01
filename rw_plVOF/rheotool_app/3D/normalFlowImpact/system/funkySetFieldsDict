@@ -1,0 +1,61 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  9.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// set IC based on 1D simulations
+expressions
+(
+        initAlpha
+        {
+                field alpha.water; //field to initialise
+                expression "(pos().z+cellDelta/2.0)<=normalDepth ? 1.0 : ((pos().z-cellDelta/2.0)>normalDepth ? 0.0 : (normalDepth-(pos().z-cellDelta/2.0))/cellDelta)";
+                variables       (
+                        "normalDepth=0.38093709;"
+                        "normalVel=3.3915176;"
+                        "cellDelta=normalDepth*3.05/72.0;"
+        		);
+                keepPatches 1;
+        }
+
+        initTwoPhaseVel
+        {
+                field U; //field to initialise
+                keepPatches true;
+                create false;
+                // expression "normalVel*vector(1,0,0)";
+                expression "(pos().z<=normalDepth) ? velProf*vector(1,0,0) : ((1.0+2.0*plN)/(1.0+plN)*normalVel)*vector(1,0,0)";
+                variables       (
+                        "normalDepth=0.38093709;"
+                        "normalVel=3.3915176;"
+                        "plN=0.30;"
+                        "expFactor=(1.0+plN)/plN;"
+                        // "normalPos=1.0-(pos().y/nd);"
+                        "normalPos=mag(1.0-(pos().z/normalDepth));"
+                        "velProf=(1.0+2.0*plN)/(1.0+plN)*normalVel*(1.0-pow(normalPos, expFactor));"
+        		);
+        }
+
+        initPressure
+        {
+                field p_rgh; //field to initialise
+                // expression "inletprofilealpha(pos().y)";
+                expression "0.0";
+                keepPatches 1;
+        }
+
+);
+
+// ************************************************************************* // 
