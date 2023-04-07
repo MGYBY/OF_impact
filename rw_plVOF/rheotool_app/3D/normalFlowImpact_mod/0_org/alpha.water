@@ -1,0 +1,75 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2106                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      alpha.water;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    inlet
+    {
+        type            groovyBC;
+        value           uniform 0;
+        valueExpression "(time()<=distPeriod/2.0) ? (((pos().z+cellDelta/2.0)<=distDepth) ? 1.0 : (((pos().z-cellDelta/2.0)>distDepth) ? 0.0 : (distDepth-(pos().z-cellDelta/2.0))/cellDelta)) : (((pos().z+cellDelta/2.0)<=nd) ? 1.0 : (((pos().z-cellDelta/2.0)>nd) ? 0.0 : (nd-(pos().z-cellDelta/2.0))/cellDelta))";
+        variables       (
+            "nd=0.38093709;"
+            "nv=3.3915176;"
+            "cellDelta=nd/24.50;"
+            "channelSin=0.06;"
+            "distPeriod=2.0*nd/channelSin/nv;"
+            "distAmp=0.0;"
+            "piVal=3.1415926;"
+            "distDepth=nd*(1.0+distAmp*sin(2.0*piVal*time()/distPeriod));"
+        );
+    }
+
+    outlet
+    {
+//         type            zeroGradient;
+//         value           uniform 0;
+
+        type            inletOutlet;
+        inletValue      uniform 0;
+        value           uniform 0;
+    }
+
+    bottom
+    {
+        type            zeroGradient;
+    }
+
+    back
+    {
+        type            zeroGradient;
+    }
+
+    atmosphere
+    {
+        type            inletOutlet;
+        inletValue      uniform 0;
+        value           uniform 0;
+    }
+
+    blockFaces
+    {
+        type            zeroGradient;
+    }
+}
+
+// ************************************************************************* //
