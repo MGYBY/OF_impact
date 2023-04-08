@@ -28,7 +28,10 @@ gradSchemes
     default     cellLimited leastSquares 1;
     // nHat        cellLimited leastSquares 0.5;
     nHat        Gauss linear;
-
+    
+//     nHat        Gauss linear;
+//     grad(p)     Gauss linear;
+//     grad(p_rgh) Gauss linear;
 }
 
 divSchemes
