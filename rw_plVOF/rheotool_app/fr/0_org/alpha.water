@@ -1,0 +1,69 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  5                                     |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      alpha.water;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    // #includeEtc "caseDicts/setConstraintTypes"
+
+    inflow
+    {
+        // type            cyclic;
+        type            groovyBC;
+        value           uniform 0;
+//         valueExpression "(time()<=distPeriod/2.0) ? (((pos().y+cellDelta/2.0)<=distDepth) ? 1.0 : (((pos().y-cellDelta/2.0)>distDepth) ? 0.0 : (distDepth-(pos().y-cellDelta/2.0))/cellDelta)) : (((pos().y+cellDelta/2.0)<=nd) ? 1.0 : (((pos().y-cellDelta/2.0)>nd) ? 0.0 : (nd-(pos().y-cellDelta/2.0))/cellDelta))";
+        valueExpression "(time()<=distPeriod/2.0) ? ((pos().y<=distDepth) ? 1.0 : 0.0) : ((pos().y<=nd) ? 1.0 : 0.0)";
+        variables       (
+            "nd=0.38093709;"
+            "nv=3.3915176;"
+            "cellDelta=nd*4.0/100.0;"
+            "channelSin=0.06;"
+            "distPeriod=2.0*nd/channelSin/nv;"
+//             "distAmp=0.250;"
+            "distAmp=0.20;"
+            "piVal=3.1415926;"
+            "distDepth=nd*(1.0+distAmp*sin(2.0*piVal*time()/distPeriod));"
+        );
+    }
+
+    outflow
+    {
+         // type            cyclic;
+        type    zeroGradient;
+    }
+
+    lowerWall
+    {
+        type            zeroGradient;
+    }
+
+    atmosphere
+    {
+        type            inletOutlet;
+        inletValue      uniform 0;
+        value           uniform 0;
+    }
+
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+// ************************************************************************* //
