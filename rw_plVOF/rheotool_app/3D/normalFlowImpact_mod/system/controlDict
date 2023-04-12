@@ -131,6 +131,75 @@ functions
 //         #};
 //     }
 
+    /********* Yet another updated CD calculation function object *********/
+    
+   /*
+   outputCd
+    {
+        functionObjectLibs ( "libutilityFunctionObjects.so" );
+        type            coded;
+        redirectType    calCd;
+        timeStart           1e-4;
+        writeControl    timeStep;
+        writeInterval   2;
+        enabled         yes;
+        codeWrite       #{
+
+
+          // User-input
+           scalar fluidDen(1000.0); // Radius
+           // scalar U0(1.); // far-field velocity
+
+          // Lookup/create variable
+
+	   const volVectorField& U = mesh().lookupObject<volVectorField>("U");
+           const volScalarField& p = mesh().lookupObject<volScalarField>("p");
+           // const dictionary& constDict = mesh().lookupObject<IOdictionary>("constitutiveProperties");
+           // dimensionedScalar rho_(constDict.subDict("parameters").lookup("rho"));
+           const volScalarField& etaWater = mesh().lookupObject<volScalarField>("eta.water");
+           const volScalarField& alphaWater = mesh().lookupObject<volScalarField>("alpha.water");
+
+
+           label cyl = mesh().boundaryMesh().findPatchID("lowerWall");
+           scalarList list;
+
+          // Compute cd
+
+           volTensorField L(fvc::grad(U));
+
+	   volSymmTensorField F(symm( L + L.T() ) * etaWater * alphaWater - p * symmTensor::I * fluidDen * alphaWater);
+
+           vector Fpatch = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & F.boundaryField()[cyl] );
+
+           Fpatch *= 4./(fluidDen * 1.0 * 1.0 * M_PI * 1.0 * 1.0); // multiplies 4 instead of 2 because of symmetry
+
+
+           list.append(mesh().time().value());  // Time (col 0)
+           list.append(Fpatch.x());             // Cd   (col 1)
+
+          // Write data
+
+           string comsh;
+           string filename("Cd.txt");
+	   std::stringstream doub2str; doub2str.precision(12);
+
+           comsh = "./writeData " + filename;
+           forAll(list, id)
+           {
+              doub2str.str(std::string());
+              doub2str << list[id];
+              comsh += " " + doub2str.str();
+           }
+
+           if (Pstream::master())
+           {
+	      system(comsh);
+           }
+
+	 #};
+    }
+    */
+
     forcesSectional
         {
             type patchExpression;
