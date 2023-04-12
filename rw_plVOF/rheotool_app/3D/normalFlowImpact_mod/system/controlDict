@@ -64,7 +64,7 @@ libs (
         "libswakFunctionObjects.so"
         "libgroovyBC.so"
         "libOpenFOAM.so"
-        "libforces.so"
+//         "libforces.so"
     );
 
 functions
@@ -169,15 +169,21 @@ functions
 
            volTensorField L(fvc::grad(U));
 
-	   volSymmTensorField F(symm( L + L.T() ) * etaWater * alphaWater - p * symmTensor::I * fluidDen * alphaWater);
+           volSymmTensorField F(symm( L + L.T() ) * etaWater * alphaWater - p * symmTensor::I * fluidDen * alphaWater);
+           volSymmTensorField FPressure(- (1.0) * p * symmTensor::I * fluidDen * alphaWater);
+           volSymmTensorField FVisco(symm( L + L.T() ) * etaWater * alphaWater);
 
            vector Fpatch = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & F.boundaryField()[cyl] );
+           vector FPpatch = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & FPressure.boundaryField()[cyl] );
+           vector FVpatch = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & FVisco.boundaryField()[cyl] );
 
-           Fpatch *= 2./(0.50 * fluidDen * U0 * U0 * H0 * obsWdith); // multiplies 4 instead of 2 because of symmetry
-
+           vector FDimlessPatch = Fpatch * 2./(0.50 * fluidDen * U0 * U0 * H0 * obsWdith); // multiplies 4 instead of 2 because of symmetry
 
            list.append(mesh().time().value());  // Time (col 0)
-           list.append(Fpatch.x());             // Cd   (col 1)
+           list.append(FPpatch.x());  // F_pressure
+           list.append(FVpatch.x());  // F_viscosity
+           list.append(Fpatch.x());             // F_total   (col 1)
+           list.append(FDimlessPatch.x());             // Cd   (col 1)
 
           // Write data
 
