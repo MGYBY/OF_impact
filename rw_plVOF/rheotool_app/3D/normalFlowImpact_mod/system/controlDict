@@ -141,14 +141,16 @@ functions
         redirectType    calCd;
         timeStart           1e-4;
         writeControl    timeStep;
-        writeInterval   2;
+        writeInterval   1;
         enabled         yes;
         codeWrite       #{
 
 
           // User-input
-           scalar fluidDen(1000.0); // Radius
-           // scalar U0(1.); // far-field velocity
+           scalar fluidDen(2130.0); // density
+           scalar U0(3.3915176); // far-field velocity
+           scalar H0(0.38093709); // far-field depth
+           scalar obsWdith(0.38093709);
 
           // Lookup/create variable
 
@@ -160,7 +162,7 @@ functions
            const volScalarField& alphaWater = mesh().lookupObject<volScalarField>("alpha.water");
 
 
-           label cyl = mesh().boundaryMesh().findPatchID("lowerWall");
+           label cyl = mesh().boundaryMesh().findPatchID("blockFaces");
            scalarList list;
 
           // Compute cd
@@ -171,7 +173,7 @@ functions
 
            vector Fpatch = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & F.boundaryField()[cyl] );
 
-           Fpatch *= 4./(fluidDen * 1.0 * 1.0 * M_PI * 1.0 * 1.0); // multiplies 4 instead of 2 because of symmetry
+           Fpatch *= 2./(0.50 * fluidDen * U0 * U0 * H0 * obsWdith); // multiplies 4 instead of 2 because of symmetry
 
 
            list.append(mesh().time().value());  // Time (col 0)
