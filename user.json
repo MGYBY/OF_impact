@@ -6,5 +6,6 @@
   "pylib__linux" : "/usr/lib/x86_64-linux-gnu/libpython3.10.so.1.0",
   "detect_line": {
     ".*C++.*": "C++",
-  }
+  },
+  "bracket_highlight": true,
 }
