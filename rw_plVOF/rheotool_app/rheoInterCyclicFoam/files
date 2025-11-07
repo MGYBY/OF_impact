@@ -1,3 +1,4 @@
-rheoInterFoam.C
+rheoInterCyclicFoam.C
+# rheoInterFoam.C
 
 EXE = $(FOAM_USER_APPBIN)/rheoInterCyclicFoam
