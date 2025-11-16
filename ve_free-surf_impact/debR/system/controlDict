@@ -1,0 +1,164 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2106                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// application     interFoam;
+// application     interIsoFoam;
+application     interIsoDeboRheoFoam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         30.0;
+
+deltaT          0.00001;
+
+writeControl    adjustableRunTime;
+
+// writeInterval   0.50;
+writeInterval   0.01;
+
+purgeWrite      0;
+
+writeFormat     binary;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
+
+adjustTimeStep  yes;
+
+// maxCo           0.45;
+//
+// maxAlphaCo      0.45;
+
+maxCo           0.48;
+
+maxAlphaCo      0.48;
+
+maxDeltaT       1;
+
+maxCapillaryNum 2000.0; //mu*V/sigma
+
+libs (
+    //    "libsimpleFunctionObjects.so"
+        // "libsimpleSwakFunctionObjects.so"
+        "libswakFunctionObjects.so"
+        "libgroovyBC.so"
+        "libOpenFOAM.so"
+//         "libforces.so"
+    );
+
+functions
+{
+    outputForce
+    {
+	 functionObjectLibs ("libutilityFunctionObjects.so");
+	 type coded;
+	 name calCd;
+	 writeControl timeStep;
+        writeInterval      1;
+        enabled             yes;
+
+	 codeWrite
+	 #{
+          // Lookup/create variable
+
+        const volVectorField& U = mesh().lookupObject<volVectorField>("U");
+        const volSymmTensorField& tau = mesh().lookupObject<volSymmTensorField>("tau");
+        // const volSymmTensorField& tau = mesh().lookupObject<volSymmTensorField>("tau.water");
+        const volScalarField& p = mesh().lookupObject<volScalarField>("p");
+        const dictionary& constDict = mesh().lookupObject<IOdictionary>("transportProperties");
+        const volScalarField& alphaWater = mesh().lookupObject<volScalarField>("alpha.water");
+        dimensionedScalar rho_(constDict.subDict("water").subDict("rheology").lookup("rho"));
+        dimensionedScalar etaS_(constDict.subDict("water").subDict("rheology").subDict("solventViscosity").subDict("constantEtaCoeffs").lookup("eta"));
+        dimensionedScalar etaP_(constDict.subDict("water").subDict("rheology").subDict("polymerProperties").subDict("constantEtaCoeffs").lookup("eta"));
+
+           label cyl = mesh().boundaryMesh().findPatchID("Cylinder");
+           scalarList list;
+
+          // Compute cd
+
+           volTensorField L(fvc::grad(U));
+
+	//    volSymmTensorField F(tau + symm( L + L.T() ) * etaS_ * alphaWater- p * symmTensor::I * rho_* alphaWater);
+        //    volSymmTensorField F(tau + symm( L + L.T() ) * etaS_- p * symmTensor::I * rho_);
+        // volSymmTensorField F(tau + symm( L + L.T() ) * etaS_- p * symmTensor::I );
+        volSymmTensorField F(tau + symm( L + L.T() ) * etaS_ * alphaWater + p * symmTensor::I * alphaWater );
+
+        //    vector Fpatch = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & F.boundaryField()[cyl] )/(etaS_ + etaP_).value();
+        vector Fpatch = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & F.boundaryField()[cyl] );
+
+           list.append(mesh().time().value());  // Time (col 0)
+           list.append(Fpatch.x());             // Cd   (col 1)
+
+          // Write data
+           string comsh;
+           string filename("Force.txt");
+	   std::stringstream doub2str; doub2str.precision(12);
+
+           comsh = "./writeData " + filename;
+           forAll(list, id)
+            {
+              doub2str.str(std::string());
+              doub2str << list[id];
+              comsh += " " + doub2str.str();
+            }
+
+           if (Pstream::master())
+            {
+	      system(comsh);
+            }
+	 #};
+    }
+
+    // pressureForcesSectional
+    //     {
+    //         type patchExpression;
+    //         outputControl timeStep;
+    //         enabled true;
+    //         outputInterval 10;
+    //         patches (
+    //             Cylinder      // change to your name or names of patch
+    //         );
+    //         aliases {
+    //         alpha1 alpha.water;
+    //         }
+    //         variables (
+    //         "position=0;"
+    //         "rhoFluid=1.0;"
+    //         // "nuFluid=1.0E-06;"
+    //         "pressure_force= p*rhoFluid*alpha1*normal()*area();"
+    //         // "viscous_force= -rho*nu*snGrad(U)*area();"
+    //         // "forces= pressure_force+viscous_force;"
+    //         "forces= pressure_force;"
+    //         );
+    //
+    //     // expression "( pos().z > position-3 && pos().z < position+3) ? forces : vector(0,0,0)";
+    //         expression "forces";
+    //     accumulations ( sum );
+    //     }
+}
+
+// ************************************************************************* //

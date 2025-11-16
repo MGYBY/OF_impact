@@ -1,0 +1,130 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Website:  https://openfoam.org                  |
+|   \\  /    A nd           | Version:  9                                     |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSolution;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solvers
+{
+    //  "alpha.water.*"
+    // {
+    //     nAlphaCorr      3;
+    //     nAlphaSubCycles 1;
+    //     cAlpha          1;
+    //
+    //     MULESCorr       yes;
+    //     nLimiterIter    6;
+    //
+    //     solver          smoothSolver;
+    //     smoother        symGaussSeidel;
+    //     tolerance       1e-8;
+    //     relTol          0;
+    // }
+
+    // "alpha.water.*"
+    // {
+    //     nAlphaCorr      1;
+    //     nAlphaSubCycles 3;
+    // }
+
+    "alpha.water.*"
+    {
+        advectionScheme   isoAdvection;
+        isoFaceTol      1e-11;
+        surfCellTol     1e-8;
+        nAlphaBounds    3;
+        snapTol         1e-12;
+        clip            true;
+        reconstructionScheme plicRDF;
+        nAlphaSubCycles 1;
+        cAlpha          1; // Note: cAlpha is not used by isoAdvector but must
+        // be specified because interfacePropertes object
+        // reads it during construction.
+        nAlphaCorr      2;
+    }
+
+    "pcorr.*"
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-10;
+        relTol          0;
+        maxIter         400;
+    }
+
+    p_rgh
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-5;
+        relTol          0.01;
+        maxIter         400;
+    }
+
+    p_rghFinal
+    {
+        $p_rgh;
+        relTol          0;
+        maxIter         200;
+    }
+
+    U
+    {
+        solver          PBiCG;
+        preconditioner  DILU;
+        tolerance       1e-11;
+        relTol          0;
+    }
+
+    "(tau.*|A.*)"
+    {
+
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-16;
+        relTol          0;
+        minIter         0;
+        maxIter         100;
+    }
+}
+
+// PIMPLE
+// {
+//     SIMPLEC           true;
+//     momentumPredictor true;
+
+//     nOuterCorrectors  1;
+//     nCorrectors       2;
+
+//     nNonOrthogonalCorrectors 0;
+// }
+
+PIMPLE
+{
+    momentumPredictor no;
+    nCorrectors     3;
+    nOuterCorrectors 3;
+    nNonOrthogonalCorrectors 0;
+    pRefCell        0;
+    pRefValue       0;
+}
+
+relaxationFactors
+{
+    equations
+    {
+        ".*" 1;
+    }
+}
+
+// ************************************************************************* //
