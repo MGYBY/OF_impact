@@ -22,8 +22,9 @@ boundaryField
    Inlet
     {
       // TODO: add stress BCs
-       type            fixedValue;
-       value           uniform (0 0 0 0 0 0);
+       // type            fixedValue;
+       // value           uniform (0 0 0 0 0 0);
+    type            zeroGradient;
     }
     
     Outlet
