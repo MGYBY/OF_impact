@@ -22,8 +22,22 @@ boundaryField
    Inlet
     {
       // TODO: add stress BCs
-       type            fixedValue;
-       value           uniform (0 0 0 0 0 0);
+       // type            fixedValue;
+       // value           uniform (0 0 0 0 0 0);
+       // type            linearExtrapolation;
+       // value           uniform (0 0 0 0 0 0);
+       // type            zeroGradient;
+        type            groovyBC;
+        value           uniform (0 0 0 0 0 0);
+        valueExpression "symmTensor(sigmaxx,sigmaxy,0.0,sigmayy,0.0,0.0)";
+        variables       (
+            "normalDepth=1.0;"
+             "DeNum=1.0;"
+             "ratio=1.0;"
+             "sigmaxx=9.0/2.0*(DeNum-DeNum*ratio)*pow(2.0*(1.0-pos().z/normalDepth),2.0);"
+             "sigmayy=0.0;"
+             "sigmaxy=3.0/2.0*(2.0-2.0*pos().z/normalDepth);"
+        );
     }
     
     Outlet
@@ -35,16 +49,18 @@ boundaryField
     {
        // type            linearExtrapolation;
        // value           uniform (0 0 0 0 0 0);
-       type            calculated;
-       value           uniform (0 0 0 0 0 0);
+       // type            calculated;
+       // value           uniform (0 0 0 0 0 0);
+       type            zeroGradient;
     }
     
     Cylinder
     {
        // type            linearExtrapolation;
        // value           uniform (0 0 0 0 0 0);
-       type            calculated;
-       value           uniform (0 0 0 0 0 0);
+       // type            calculated;
+       // value           uniform (0 0 0 0 0 0);
+       type            zeroGradient;
     }
     
     Back
