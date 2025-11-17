@@ -55,7 +55,22 @@ expressions
                 keepPatches 1;
         }
 
-        // TODO: add stress initialization
+        tauInit
+        {
+                field tau; //field to initialise
+                // expression "inletprofilealpha(pos().y)";
+                // expression "tensor(sigmaxx,sigmaxy,0,sigmaxy,sigmayy,0,0,0);";
+                expression "symmTensor(sigmaxx,sigmaxy,0.0,sigmayy,0.0,0.0)";
+                variables       (
+                        "normalDepth=1.0;"
+                        "DeNum=1.0;"
+                        "ratio=1.0;"
+                        "sigmaxx=9.0/2.0*(DeNum-DeNum*ratio)*pow(2.0*(1.0-pos().z/normalDepth),2.0);"
+                        "sigmayy=0.0;"
+                        "sigmaxy=3.0/2.0*(2.0-2.0*pos().z/normalDepth);"
+        		);
+                keepPatches 1;
+        }
 );
 
 // ************************************************************************* // 
