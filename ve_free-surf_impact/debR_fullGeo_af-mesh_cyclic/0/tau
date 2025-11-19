@@ -1,0 +1,105 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Website:  https://openfoam.org                  |
+|   \\  /    A nd           | Version:  9                                     |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volSymmTensorField;
+    object      tau;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [1 -1 -2 0 0 0 0];
+
+internalField   uniform (0 0 0 0 0 0);
+
+boundaryField
+{
+   inlet
+    {
+      // TODO: add stress BCs
+       // type            fixedValue;
+       // value           uniform (0 0 0 0 0 0);
+       // type            linearExtrapolation;
+       // value           uniform (0 0 0 0 0 0);
+       // type            zeroGradient;
+        type            groovyBC;
+        value           uniform (0 0 0 0 0 0);
+        valueExpression "symmTensor(sigmaxx,sigmaxy,0.0,sigmayy,0.0,0.0)";
+        variables       (
+            "normalDepth=1.0;"
+             "DeNum=0.0;"
+             "ratio=1.0;"
+             "sigmaxx=pos().z<=normalDepth ? 9.0/2.0*(DeNum-DeNum*ratio)*pow(2.0*(1.0-pos().z/normalDepth),2.0) : 0.0;"
+             "sigmayy=0.0;"
+             "sigmaxy=pos().z<=normalDepth ? 3.0/2.0*(2.0-2.0*pos().z/normalDepth) : 0.0;"
+        );
+    }
+    
+    outlet
+    {
+       type            zeroGradient;
+       value           uniform 0;
+    }
+
+    bottom
+    {
+       // type            linearExtrapolation;
+       // value           uniform (0 0 0 0 0 0);
+       // type            calculated;
+       // value           uniform (0 0 0 0 0 0);
+       type            zeroGradient;
+    }
+    
+    cylinder
+    {
+       // type            linearExtrapolation;
+       // value           uniform (0 0 0 0 0 0);
+       // type            calculated;
+       // value           uniform (0 0 0 0 0 0);
+       type            zeroGradient;
+    }
+    
+    backNew
+    {
+       // type            zeroGradient;
+       // type            groovyBC;
+       //  value           uniform (0 0 0 0 0 0);
+       //  valueExpression "symmTensor(sigmaxx,sigmaxy,0.0,sigmayy,0.0,0.0)";
+       //  variables       (
+       //      "normalDepth=1.0;"
+       //       "DeNum=1.0;"
+       //       "ratio=0.50;"
+       //       "sigmaxx=pos().z<=normalDepth ? 9.0/2.0*(DeNum-DeNum*ratio)*pow(2.0*(1.0-pos().z/normalDepth),2.0) : 0.0;"
+       //       "sigmayy=0.0;"
+       //       "sigmaxy=pos().z<=normalDepth ? 3.0/2.0*(2.0-2.0*pos().z/normalDepth) : 0.0;"
+       //  );
+       // type            symmetryPlane;
+       // type            cyclic;
+        type            cyclicAMI;
+
+    }
+
+    frontNew
+    {
+        // type            zeroGradient;
+        // type            symmetryPlane;
+       // type            cyclic;
+        type            cyclicAMI;
+    }
+    
+    atmosphere
+    {
+         type            zeroGradient;
+    }
+    
+    // Symmetry
+    // {
+    //    type            symmetryPlane;
+    // }
+}

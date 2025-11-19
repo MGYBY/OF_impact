@@ -1,0 +1,84 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2106                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      alpha.water;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    inlet
+    {
+        type            groovyBC;
+        value           uniform 0;
+        valueExpression "(pos().z)<=normalDepth ? 1.0 :0.0";
+        variables       (
+            "normalDepth=1.0;"
+        );
+    }
+
+    outlet
+    {
+        type            zeroGradient;
+        value           uniform 0;
+
+        // type            inletOutlet;
+        // inletValue      uniform 0;
+        // value           uniform 0;
+    }
+
+    bottom
+    {
+        type            zeroGradient;
+    }
+
+    backNew
+    {
+        // type            zeroGradient;
+        // type            symmetryPlane;
+        // type            cyclic;
+        type            cyclicAMI;
+    }
+
+    frontNew
+    {
+        // type            zeroGradient;
+        // type            symmetryPlane;
+        // type            cyclic;
+        type            cyclicAMI;
+    }
+
+    atmosphere
+    {
+        type            inletOutlet;
+        inletValue      uniform 0;
+        value           uniform 0;
+    }
+
+    cylinder
+    {
+        type            zeroGradient;
+    }
+
+    // Symmetry
+    // {
+    //    type            symmetryPlane;
+    // }
+}
+
+// ************************************************************************* //
