@@ -1,0 +1,111 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Website:  https://openfoam.org                  |
+|   \\  /    A nd           | Version:  9                                     |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     rheoInterFoam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         500.0; 
+
+deltaT          0.000001;
+
+writeControl    adjustableRunTime;
+
+writeInterval   1.0;
+
+purgeWrite      0;
+
+// writeFormat     ascii;
+writeFormat     binary;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
+
+adjustTimeStep  yes;
+
+maxCo           0.4750;
+
+maxAlphaCo      0.4750;
+
+maxDeltaT       0.05;
+
+libs (
+    //    "libsimpleFunctionObjects.so"
+        // "libsimpleSwakFunctionObjects.so"
+        "libswakFunctionObjects.so"
+        "libgroovyBC.so"
+        "libOpenFOAM.so"
+        // "libforces.so"
+);
+
+functions
+{
+    outputViscousStress
+    {
+	 functionObjectLibs ("libutilityFunctionObjects.so");
+	 type coded;
+	 name writePressure;
+	 writeControl adjustableRunTime;
+     writeInterval      1.0;
+    // autowrite      true;
+    //  outputControl   timeStep;
+    //  outputInterval  1; // Write every time step, or adjust as needed
+     enabled             yes;
+
+    //  codeInclude
+    //  #{
+    //  #include "OFstream.H"
+    //  #};
+
+	 codeWrite
+        #{
+            // Access the mesh and time
+            // const IOdictionary& d = static_cast<const IOdictionary&>(dict);
+            // const fvMesh& mesh = refCast<const fvMesh>(d.db());
+            // scalar t = this->db().time().value();
+            // const Time& runTime = mesh().time().value();
+            const volVectorField& U = mesh().lookupObject<volVectorField>("U");
+            volTensorField L(fvc::grad(U));
+            volSymmTensorField outputViscousStress = ( symm( L + L.T() ) );
+            // (
+            //     IOobject
+            //     (
+            //         "outputViscousStress"
+            //         // t,
+            //         // mesh,
+            //         // IOobject::NO_READ,
+            //         // IOobject::AUTO_WRITE
+            //     ),
+            //     ( symm( L + L.T() ) )
+            // );
+            // outputViscousStress.write();
+            // Write the new field to the time directory
+            outputViscousStress.write();
+        #};
+    }
+}
+// ************************************************************************* //
