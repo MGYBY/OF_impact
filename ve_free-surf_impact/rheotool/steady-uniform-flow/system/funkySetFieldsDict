@@ -1,0 +1,60 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  9.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// set IC based on 1D simulations
+expressions
+(
+        initAlpha
+        {
+                field alpha.water; //field to initialise
+                expression "pos().z<=normalDepth ? 1.0 : 0.0";
+                variables       (
+            		"normalDepth=1.0;"
+        		);
+                keepPatches true;
+        }
+
+        initTwoPhaseVel
+        {
+                field U; //field to initialise
+                keepPatches true;
+                create false;
+                // expression "normalVel*vector(1,0,0)";
+//                 expression "(pos().y<=normalDepth) ? velProf*vector(1,0,0) : ((1.0+2.0*plN)/(1.0+plN)*normalVel)*vector(1,0,0)";
+                expression "pos().z<=normalDepth ? vector(velProf,0,0) : ((pos().z>normalDepth && pos().z<3.0*normalDepth) ? surfVel*(3.0*normalDepth-pos().z)/(2.0*normalDepth)*vector(1,0,0) : 0.0*vector(1,0,0))";
+                variables       (
+                        "normalDepth=1.0;"
+                        "plN=1.0;"
+                        "expFactor=(1.0+plN)/plN;"
+                        // "normalPos=1.0-(pos().y/nd);"
+                        "normalPos=mag(1.0-(pos().z/normalDepth));"
+                        "velProf=(1.0+2.0*plN)/(1.0+plN)*(1.0-pow(normalPos, expFactor));"
+                        "surfVel=(1.0+2.0*plN)/(1.0+plN)*pow(normalDepth/normalDepth,2.0)*1.0*1.005;"
+        		);
+        }
+
+        initPressure
+        {
+                field p_rgh; //field to initialise
+                // expression "inletprofilealpha(pos().y)";
+                expression "0.0";
+                keepPatches 1;
+        }
+
+);
+
+// ************************************************************************* // 
