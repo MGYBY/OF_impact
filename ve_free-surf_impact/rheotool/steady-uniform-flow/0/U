@@ -1,0 +1,76 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2106                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    arch        "LSB;label=32;scalar=64";
+    class       volVectorField;
+    location    "0";
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    // #includeEtc "caseDicts/setConstraintTypes"
+
+    inflow
+    {
+        type            groovyBC;
+        value           uniform (0 0 0);
+        valueExpression "(pos().z<=nd) ? velProf*vector(1,0,0) : ((pos().z>nd && pos().z<3.0*nd) ? surfVel*(3.0*nd-pos().z)/(2.0*nd)*vector(1,0,0) : 0.0*vector(1,0,0))";
+        // valueExpression "(nv)*vector(1,0,0)";
+        variables (
+            "nd=1.0;"
+			"nv=1.0;"
+            "channelSin=0.05;"
+            "plN=1.0;"
+            "expFactor=(1.0+plN)/plN;"
+            "normalPos=mag(1.0-(pos().z/nd));"
+            // "distDepth=nd*(1.0+distAmp*sin(2.0*piVal*time()/distPeriod));"
+            "velProf=(1.0+2.0*plN)/(1.0+plN)*pow(nd/nd,2.0)*(1.0-pow(normalPos, expFactor));"
+            "surfVel=(1.0+2.0*plN)/(1.0+plN)*pow(nd/nd,2.0)*1.0*1.005;"
+        );
+    }
+
+    outflow
+    {
+        // type            cyclic;
+        // type    zeroGradient;
+        type            inletOutlet;
+        inletValue      uniform (0 0 0);
+        value           uniform (0 0 0);
+    }
+
+    lowerWall
+    {
+        // type            noSlip;
+        type            fixedValue;
+        value           uniform (0 0 0);
+    }
+
+    atmosphere
+    {
+        // type            pressureInletOutletVelocity;
+        // value           uniform (0 0 0);
+        type          zeroGradient;
+    }
+
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+
+// ************************************************************************* //
