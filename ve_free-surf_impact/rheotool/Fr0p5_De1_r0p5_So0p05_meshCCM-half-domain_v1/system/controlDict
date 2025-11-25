@@ -160,23 +160,66 @@ functions
         // ignore_unimplemented_simpleFunctionObject::updateMesh true;
     }
 
+// cannot work for reconstructPar
+// outputViscousStress
+//     {
+// 	 functionObjectLibs ("libutilityFunctionObjects.so");
+// 	 type coded;
+// 	 name writePressure;
+// 	 writeControl adjustableRunTime;
+//      writeInterval      0.10;
+//      enabled             yes;
+// 	 codeWrite
+//         #{
+//             const volVectorField& U = mesh().lookupObject<volVectorField>("U");
+//             volTensorField L(fvc::grad(U));
+//             const dictionary& constDict = mesh().lookupObject<IOdictionary>("constitutiveProperties");
+//             dimensionedScalar etaS_(constDict.subDict("water").subDict("parameters").lookup("etaS"));
+//             volSymmTensorField ViscousStress = ( symm( L + L.T() ) * etaS_  );
+//             ViscousStress.write();
+//         #};
+//     }
 
-    outputViscousStress
+	// improved viscous-stress output
+	outputViscousStress
     {
 	 functionObjectLibs ("libutilityFunctionObjects.so");
 	 type coded;
-	 name writePressure;
+//         type            codeStream;
+//         libs            (fieldFunctionObjects); // Required to use field-related functions
+//          functionObjectLibs ("fieldFunctionObjects.so");
+	 name writeVS;
 	 writeControl adjustableRunTime;
-     writeInterval      0.10;
+     writeInterval      0.020;
      enabled             yes;
+     
+     codeInclude
+        #{
+            #include "fvCFD.H"
+            #include "IOstreams.H"
+            #include "volFields.H"
+        #};
+ 
 	 codeWrite
         #{
             const volVectorField& U = mesh().lookupObject<volVectorField>("U");
             volTensorField L(fvc::grad(U));
             const dictionary& constDict = mesh().lookupObject<IOdictionary>("constitutiveProperties");
             dimensionedScalar etaS_(constDict.subDict("water").subDict("parameters").lookup("etaS"));
-            volSymmTensorField ViscousStress = ( symm( L + L.T() ) * etaS_  );
-            ViscousStress.write();
+//             volSymmTensorField ViscousStress = ( symm( L + L.T() ) * etaS_  );
+            volSymmTensorField ViscousStressField
+            (
+                IOobject
+                (
+                    "ViscousStress",         // Name of the new field
+                    mesh().time().timeName(),
+                    U.mesh(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+                symm( L + L.T() ) * etaS_ 
+            );
+            ViscousStressField.write();
         #};
     }
 }
