@@ -1,0 +1,87 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2106                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      alpha.water;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+
+    Inlet
+    {
+        type            groovyBC;
+        refValue        uniform 0;
+        refGradient     uniform 0;
+        valueFraction   uniform 1;
+        value           uniform 0;
+        valueExpression "inletprofilealpha(pos().z)";
+        gradientExpression "0";
+        fractionExpression "1";
+        evaluateDuringConstruction 1;
+        variables       "";
+        timelines       (
+        );
+        lookuptables    (
+            {
+                name            inletprofilealpha;
+                file            "./1d_profil/alpha.water.xy";
+                outOfBounds     clamp;
+            }
+        );
+    }
+
+    Outlet
+    {
+        type            zeroGradient;
+//         value           uniform 0;
+
+        // type            inletOutlet;
+        // inletValue      uniform 0;
+        // value           uniform 0;
+    }
+
+    Bottom
+    {
+        type            zeroGradient;
+    }
+
+    Back
+    {
+        type            zeroGradient;
+    }
+
+    Atmosphere
+    {
+        // type            inletOutlet;
+        // inletValue      uniform 0;
+        // value           uniform 0;
+        type            zeroGradient;
+    }
+
+    Cylinder
+    {
+        type            zeroGradient;
+    }
+
+    Symmetry
+    {
+       type            symmetryPlane;
+    }
+}
+
+// ************************************************************************* //

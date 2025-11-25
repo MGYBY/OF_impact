@@ -1,0 +1,104 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Website:  https://openfoam.org                  |
+|   \\  /    A nd           | Version:  9                                     |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volSymmTensorField;
+    object      tau;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [1 -1 -2 0 0 0 0];
+
+internalField   uniform (0 0 0 0 0 0);
+
+boundaryField
+{
+   Inlet
+    {
+      // TODO: add stress BCs
+      //  type            fixedValue;
+      //  value           uniform (0 0 0 0 0 0);
+      type            groovyBC;
+      refValue        uniform   (0 0 0 0 0 0); 
+      valueExpression "symmTensor(inletprofiletauxx(pos().z),inletprofiletauxy(pos().z),inletprofiletauxz(pos().z),inletprofiletauyy(pos().z),inletprofiletauyz(pos().z),inletprofiletauzz(pos().z))";
+      gradientExpression "symmTensor(0,0,0,0,0,0)";
+      fractionExpression "1";
+      evaluateDuringConstruction 1;
+      variables       "";
+      timelines       (
+      );
+      lookuptables (
+                {
+                        name inletprofiletauxx;
+                        outOfBounds clamp;
+                        file "./1d_profil/tau.water-0.xy";
+                }
+                {
+                        name inletprofiletauxy;
+                        outOfBounds clamp;
+                        file "./1d_profil/tau.water-1.xy";
+                }
+                {
+                        name inletprofiletauxz;
+                        outOfBounds clamp;
+                        file "./1d_profil/tau.water-2.xy";
+                }
+                {
+                        name inletprofiletauyy;
+                        outOfBounds clamp;
+                        file "./1d_profil/tau.water-3.xy";
+                }
+                {
+                        name inletprofiletauyz;
+                        outOfBounds clamp;
+                        file "./1d_profil/tau.water-4.xy";
+                }
+                {
+                        name inletprofiletauzz;
+                        outOfBounds clamp;
+                        file "./1d_profil/tau.water-5.xy";
+                }
+      );
+    }
+    
+    Outlet
+    {
+       type            zeroGradient;
+    }
+
+    Bottom
+    {
+        // type            zeroGradient;
+       type            linearExtrapolation;
+       value           uniform (0 0 0 0 0 0);
+    }
+    
+    Cylinder
+    {
+        // type            zeroGradient;
+       type            linearExtrapolation;
+       value           uniform (0 0 0 0 0 0);
+    }
+    
+    Back
+    {
+       type            zeroGradient;
+    }
+    
+    Atmosphere
+    {
+         type            zeroGradient;
+    }
+    
+    Symmetry
+    {
+       type            symmetryPlane;
+    }
+}

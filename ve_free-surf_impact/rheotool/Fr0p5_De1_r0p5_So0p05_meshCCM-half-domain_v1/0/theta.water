@@ -1,0 +1,100 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Website:  https://openfoam.org                  |
+|   \\  /    A nd           | Version:  9                                     |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volSymmTensorField;
+    object      theta;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [ 0 0 0 0 0 0 0];
+
+internalField   uniform (0 0 0 0 0 0);
+
+boundaryField
+{
+   Inlet
+    {
+      // TODO: add stress BCs
+      //  type            fixedValue;
+      //  value           uniform (0 0 0 0 0 0);
+      type            groovyBC;
+      refValue        uniform   (0 0 0 0 0 0); 
+      valueExpression "symmTensor(inletprofilethetaxx(pos().z),inletprofilethetaxy(pos().z),inletprofilethetaxz(pos().z),inletprofilethetayy(pos().z),inletprofilethetayz(pos().z),inletprofilethetazz(pos().z))";
+      gradientExpression "symmTensor(0,0,0,0,0,0)";
+      fractionExpression "1";
+      evaluateDuringConstruction 1;
+      variables       "";
+      timelines       (
+      );
+      lookuptables (
+                {
+                        name inletprofilethetaxx;
+                        outOfBounds clamp;
+                        file "./1d_profil/theta.water-0.xy";
+                }
+                {
+                        name inletprofilethetaxy;
+                        outOfBounds clamp;
+                        file "./1d_profil/theta.water-1.xy";
+                }
+                {
+                        name inletprofilethetaxz;
+                        outOfBounds clamp;
+                        file "./1d_profil/theta.water-2.xy";
+                }
+                {
+                        name inletprofilethetayy;
+                        outOfBounds clamp;
+                        file "./1d_profil/theta.water-3.xy";
+                }
+                {
+                        name inletprofilethetayz;
+                        outOfBounds clamp;
+                        file "./1d_profil/theta.water-4.xy";
+                }
+                {
+                        name inletprofilethetazz;
+                        outOfBounds clamp;
+                        file "./1d_profil/theta.water-5.xy";
+                }
+      );
+    }
+    
+    Outlet
+    {
+       type            zeroGradient;
+    }
+    
+    Bottom
+    {
+      type             zeroGradient;
+    }
+    
+    Back
+    {
+       type            zeroGradient;
+    }
+
+    Cylinder
+    {
+       type            zeroGradient;
+    }
+    
+    Atmosphere
+    {
+         type          zeroGradient;
+    }
+    
+    Symmetry
+    {
+       type            symmetryPlane;
+    }
+}
