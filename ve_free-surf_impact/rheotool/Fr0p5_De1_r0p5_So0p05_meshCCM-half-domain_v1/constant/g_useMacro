@@ -1,0 +1,29 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2106                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       uniformDimensionedVectorField;
+    object      g;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+slopeSin 0.050;
+frNum 0.8750;
+grav #calc "1.0/($frNum*$frNum)";
+slopeCos #calc "sqrt(1.0-$slopeSin*$slopeSin)";
+gx #calc "$grav*$slopeSin";
+gz #calc "(-1.0)*$grav*$slopeCos";
+
+dimensions      [0 1 -2 0 0 0 0];
+// value           (0.0836768475 -9.809643122 0.0);
+// value           (0.1997505 0.0 -3.995);
+value           ($gx 0.0 $gz);
+
+
+// ************************************************************************* //
