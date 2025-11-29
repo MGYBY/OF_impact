@@ -81,7 +81,8 @@ PIMPLE
     nOuterCorrectors  2;
     nCorrectors       2;
     
-    nNonOrthogonalCorrectors 0;
+    // nNonOrthogonalCorrectors 0;
+    nNonOrthogonalCorrectors 1; // at least 1 suggested by Wolf Dynamics (dynamic mesh tut)
 }
 
 relaxationFactors
