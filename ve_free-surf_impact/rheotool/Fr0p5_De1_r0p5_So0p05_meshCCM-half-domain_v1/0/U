@@ -45,11 +45,17 @@ boundaryField
     Outlet
     {
         // original BC setup here
-        type    zeroGradient;
+        // for supercritical flows
+        // type    zeroGradient;
         // mud-flow setup here
         // type            inletOutlet;
         // inletValue      uniform (0 0 0);
         // value           uniform (0 0 0);
+
+        // necessary for subcritical flows
+        type            outletPhaseMeanVelocity;
+        UnMean          1.0;
+        alpha           alpha.water;
     }
 
     Back
