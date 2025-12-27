@@ -25,10 +25,15 @@ boundaryField
     Outlet
     {
         // original setup here
-        type            zeroGradient;
+		// for supercritical flows
+        // type            zeroGradient;
         // mudflow sim setup here
 //         type         /*   fixedFluxPressure;
 //         value           uniform 0;*/
+
+		// seems to work better for subcritical flows
+		type            fixedFluxPressure;
+        value           uniform 0;
     }
 
     /*outlet
