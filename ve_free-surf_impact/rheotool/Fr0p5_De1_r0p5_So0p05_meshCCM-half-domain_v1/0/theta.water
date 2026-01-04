@@ -41,17 +41,17 @@ boundaryField
                         file "./1d_profil/theta.water-0.xy";
                 }
                 {
-                        name inletprofilethetaxy;
+                        name inletprofilethetayy;
                         outOfBounds clamp;
                         file "./1d_profil/theta.water-1.xy";
                 }
                 {
-                        name inletprofilethetaxz;
+                        name inletprofilethetazz;
                         outOfBounds clamp;
                         file "./1d_profil/theta.water-2.xy";
                 }
                 {
-                        name inletprofilethetayy;
+                        name inletprofilethetaxy;
                         outOfBounds clamp;
                         file "./1d_profil/theta.water-3.xy";
                 }
@@ -61,7 +61,7 @@ boundaryField
                         file "./1d_profil/theta.water-4.xy";
                 }
                 {
-                        name inletprofilethetazz;
+                        name inletprofilethetaxz;
                         outOfBounds clamp;
                         file "./1d_profil/theta.water-5.xy";
                 }
