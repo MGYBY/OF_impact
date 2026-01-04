@@ -41,17 +41,17 @@ boundaryField
                         file "./1d_profil/tau.water-0.xy";
                 }
                 {
-                        name inletprofiletauxy;
+                        name inletprofiletauyy;
                         outOfBounds clamp;
                         file "./1d_profil/tau.water-1.xy";
                 }
                 {
-                        name inletprofiletauxz;
+                        name inletprofiletauzz;
                         outOfBounds clamp;
                         file "./1d_profil/tau.water-2.xy";
                 }
                 {
-                        name inletprofiletauyy;
+                        name inletprofiletauxy;
                         outOfBounds clamp;
                         file "./1d_profil/tau.water-3.xy";
                 }
@@ -61,7 +61,7 @@ boundaryField
                         file "./1d_profil/tau.water-4.xy";
                 }
                 {
-                        name inletprofiletauzz;
+                        name inletprofiletauxz;
                         outOfBounds clamp;
                         file "./1d_profil/tau.water-5.xy";
                 }
