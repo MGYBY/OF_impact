@@ -1,0 +1,71 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Website:  https://openfoam.org                  |
+|   \\  /    A nd           | Version:  9                                     |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      constitutiveProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+rhoR 100.50;
+visR 68.0;
+slopeTan 0.050;
+frNum 1.0;
+reyNum #calc "3.0*$frNum*$frNum/$slopeTan";
+waterRho 1.0;
+airRho #calc "$waterRho/$rhoR";
+DebNum 1.0;
+rVis 0.50;
+etaTotal #calc "1.0/$reyNum";
+etaSVal #calc "$etaTotal*$rVis";
+etaPVal #calc "$etaTotal-$etaSVal";
+airEta #calc "$etaTotal/$visR";
+weNum 0.02;
+
+phases (water air);
+
+water
+{
+      parameters
+       {		        
+        //  type             Oldroyd-BLog;
+        //  rho              rho [ 1 -3 0 0 0 0 0 ] 1.0;
+        //  etaS             etaS [1 -1 -1 0 0 0 0] 0.033333;
+        //  etaP             etaP [1 -1 -1 0 0 0 0] 0.033333;
+        //  lambda           lambda [0 0 1 0 0 0 0] 0.50;
+
+         type             Oldroyd-BLog;
+         rho              rho [ 1 -3 0 0 0 0 0 ] $waterRho;
+         etaS             etaS [1 -1 -1 0 0 0 0] $etaSVal;
+         etaP             etaP [1 -1 -1 0 0 0 0] $etaPVal;
+         lambda           lambda [0 0 1 0 0 0 0] $DebNum;
+         
+         stabilization    coupling;
+       }
+}
+
+air
+{
+     parameters
+       {		        
+         type            Newtonian;
+        //  rho             rho [1 -3 0 0 0 0 0] 0.0098;
+        //  eta             eta [1 -1 -1 0 0 0 0] 4.0e-4; 
+
+         rho             rho [1 -3 0 0 0 0 0] $airRho;
+         eta             eta [1 -1 -1 0 0 0 0] $airEta;
+       }
+}
+ 
+
+// sigma           sigma [ 1 0 -2 0 0 0 0 ] 0.025;
+sigma           sigma [ 1 0 -2 0 0 0 0 ] $weNum;
+
+// ************************************************************************* //
