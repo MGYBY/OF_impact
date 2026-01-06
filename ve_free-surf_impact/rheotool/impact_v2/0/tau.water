@@ -1,0 +1,61 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Website:  https://openfoam.org                  |
+|   \\  /    A nd           | Version:  9                                     |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volSymmTensorField;
+    object      tau;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [1 -1 -2 0 0 0 0];
+
+internalField   uniform (0 0 0 0 0 0);
+
+boundaryField
+{
+   Inlet
+    {
+      type            zeroGradient;
+    }
+    
+    Outlet
+    {
+       type            zeroGradient;
+    }
+
+    Bottom
+    {
+        // type            zeroGradient;
+       type            linearExtrapolation;
+       value           uniform (0 0 0 0 0 0);
+    }
+    
+    Cylinder
+    {
+        // type            zeroGradient;
+       type            linearExtrapolation;
+       value           uniform (0 0 0 0 0 0);
+    }
+    
+    Back
+    {
+       type            zeroGradient;
+    }
+    
+    Atmosphere
+    {
+         type            zeroGradient;
+    }
+    
+    Symmetry
+    {
+       type            symmetryPlane;
+    }
+}
