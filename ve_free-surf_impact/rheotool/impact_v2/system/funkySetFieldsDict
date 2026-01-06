@@ -1,0 +1,164 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  9.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// set IC based on 1D simulations
+expressions
+(
+        initAlpha
+        {
+                field alpha.water; //field to initialise
+//                 expression "(pos().z+cellDelta/2.0)<=normalDepth ? 1.0 : ((pos().z-cellDelta/2.0)>normalDepth ? 0.0 : (normalDepth-(pos().z-cellDelta/2.0))/cellDelta)";
+                expression "(pos().z<=(normalDepth-cellSize/2.0)) ? 1.0 : (pos().z<=(normalDepth+cellSize/2.0) ? (pos().z-(normalDepth-cellSize/2.0))/cellSize : 0.0)";
+                variables       (
+                        "normalDepth=1.0;"
+                        "cellSize=0.04651;"
+        		);
+                keepPatches 1;
+        }
+
+        initTwoPhaseVel
+        {
+                field U; //field to initialise
+                keepPatches true;
+                create false;
+                // expression "normalVel*vector(1,0,0)";
+//                 expression "(pos().z<=normalDepth) ? velProf*vector(1,0,0) : ((1.0+2.0*plN)/(1.0+plN)*normalVel)*vector(1,0,0)";
+                expression "pos().z<=normalDepth ? vector(velProf,0,0) : ((pos().z>normalDepth && pos().z<3.0*normalDepth) ? surfVel*(3.0*normalDepth-pos().z)/(2.0*normalDepth)*vector(1,0,0) : 0.0*vector(1,0,0))";
+                variables       (
+                        "normalDepth=1.0;"
+                        "plN=1.0;"
+                        "expFactor=(1.0+plN)/plN;"
+                        // "normalPos=1.0-(pos().y/nd);"
+                        "normalPos=mag(1.0-(pos().z/normalDepth));"
+                        "velProf=(1.0+2.0*plN)/(1.0+plN)*(1.0-pow(normalPos, expFactor));"
+                        "surfVel=(1.0+2.0*plN)/(1.0+plN)*pow(normalDepth/normalDepth,2.0)*1.0*1.005;"
+        		);
+        }
+
+        initPressure
+        {
+                field p_rgh; //field to initialise
+                // expression "inletprofilealpha(pos().y)";
+                expression "0.0";
+                keepPatches 1;
+        }
+
+        // TODO: add stress initialization
+        // tauInit
+        // {
+        //         field tau.water; //field to initialise
+        //         // expression "inletprofilealpha(pos().y)";
+        //         // expression "tensor(sigmaxx,sigmaxy,0,sigmaxy,sigmayy,0,0,0);";
+        //         expression "symmTensor(sigmaxx,sigmaxy,0.0,sigmayy,0.0,0.0)";
+        //         variables       (
+        //                 "normalDepth=1.0;"
+        //                 "DeNum=1.0;"
+        //                 "ratio=0.50;"
+        //                 "sigmaxx=pos().z<=normalDepth ? 9.0/2.0*(DeNum-DeNum*ratio)*pow(2.0*(1.0-pos().z/normalDepth),2.0) : 0.0;"
+        //                 "sigmayy=0.0;"
+        //                 "sigmaxy=pos().z<=normalDepth ? 3.0/2.0*(2.0-2.0*pos().z/normalDepth) : 0.0;"
+        // 		);
+        //         keepPatches 1;
+        // }
+        // tauInit
+        // {
+        //         field tau.water; //field to initialise
+        //         fields
+        //         (
+        //                 z tau.water
+        //         );
+        //         lookuptables (
+        //         {
+        //                 name inletprofiletauxx;
+        //                 outOfBounds clamp;
+        //                 file "./1d_profil/tau.water-0.xy";
+        //         }
+        //         {
+        //                 name inletprofiletauxy;
+        //                 outOfBounds clamp;
+        //                 file "./1d_profil/tau.water-1.xy";
+        //         }
+        //         {
+        //                 name inletprofiletauxz;
+        //                 outOfBounds clamp;
+        //                 file "./1d_profil/tau.water-2.xy";
+        //         }
+        //         {
+        //                 name inletprofiletauyy;
+        //                 outOfBounds clamp;
+        //                 file "./1d_profil/tau.water-3.xy";
+        //         }
+        //         {
+        //                 name inletprofiletauyz;
+        //                 outOfBounds clamp;
+        //                 file "./1d_profil/tau.water-4.xy";
+        //         }
+        //         {
+        //                 name inletprofiletauzz;
+        //                 outOfBounds clamp;
+        //                 file "./1d_profil/tau.water-5.xy";
+        //         }
+        //         );
+        //         expression "symmTensor(inletprofiletauxx(pos().z),inletprofiletauxy(pos().z),inletprofiletauxz(pos().z),inletprofiletauyy(pos().z),inletprofiletauyz(pos().z),inletprofiletauzz(pos().z))";
+        //         keepPatches 1;
+        // }
+
+        // thetaInit
+        // {
+        //         field theta.water; //field to initialise
+        //         fields
+        //         (
+        //                 z theta.water
+        //         );
+        //         lookuptables (
+        //         {
+        //                 name inletprofilethetaxx;
+        //                 outOfBounds clamp;
+        //                 file "./1d_profil/theta.water-0.xy";
+        //         }
+        //         {
+        //                 name inletprofilethetaxy;
+        //                 outOfBounds clamp;
+        //                 file "./1d_profil/theta.water-1.xy";
+        //         }
+        //         {
+        //                 name inletprofilethetaxz;
+        //                 outOfBounds clamp;
+        //                 file "./1d_profil/theta.water-2.xy";
+        //         }
+        //         {
+        //                 name inletprofilethetayy;
+        //                 outOfBounds clamp;
+        //                 file "./1d_profil/theta.water-3.xy";
+        //         }
+        //         {
+        //                 name inletprofilethetayz;
+        //                 outOfBounds clamp;
+        //                 file "./1d_profil/theta.water-4.xy";
+        //         }
+        //         {
+        //                 name inletprofilethetazz;
+        //                 outOfBounds clamp;
+        //                 file "./1d_profil/theta.water-5.xy";
+        //         }
+        //         );
+        //         expression "symmTensor(inletprofilethetaxx(pos().z),inletprofilethetaxy(pos().z),inletprofilethetaxz(pos().z),inletprofilethetayy(pos().z),inletprofilethetayz(pos().z),inletprofilethetazz(pos().z))";
+        //         keepPatches 1;
+        // }
+);
+
+// ************************************************************************* // 
