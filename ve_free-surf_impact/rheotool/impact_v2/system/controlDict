@@ -101,17 +101,23 @@ functions
         volTensorField L(fvc::grad(U));
 
         volSymmTensorField F( tau + symm( L + L.T() ) * etaS_ * alphaWater + p * symmTensor::I * alphaWater );
-        volSymmTensorField FPloy( tau + symm( L + L.T() ) * etaS_ * alphaWater );
+        volSymmTensorField FPloy( tau * alphaWater + symm( L + L.T() ) * etaS_ * alphaWater );
         volSymmTensorField FPressure( p * symmTensor::I * alphaWater );
+        volSymmTensorField FVS( symm( L + L.T() ) * etaS_ * alphaWater );
+        volSymmTensorField FElastic( tau * alphaWater );
 
         //    vector Fpatch = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & F.boundaryField()[cyl] )/(etaS_ + etaP_).value();
         vector Fpatch = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & F.boundaryField()[cyl] );
         vector FpatchPoly = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & FPloy.boundaryField()[cyl] );
         vector FpatchPressure = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & FPressure.boundaryField()[cyl] );
+        vector FFVS = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & FVS.boundaryField()[cyl] );
+        vector FFElastic = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & FElastic.boundaryField()[cyl] );
 
         list.append(mesh().time().value());  // Time (col 0)
         list.append(FpatchPoly.x());             // Cd   (col 1)
         list.append(FpatchPressure.x());             // Cd   (col 2)
+        list.append(FFVS.x());             // Cd   (col 1)
+        list.append(FFElastic.x());             // Cd   (col 2)
         list.append(Fpatch.x());             // Cd   (col 3)
 
         // Write data
@@ -170,7 +176,7 @@ functions
 //          functionObjectLibs ("fieldFunctionObjects.so");
 	 name writeVS;
 	 writeControl adjustableRunTime;
-     writeInterval      0.5;
+     writeInterval      2.0;
      enabled             yes;
      
      codeInclude
