@@ -24,14 +24,13 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         30.0;
+endTime         26.50;
 
 deltaT          0.00001;
 
 writeControl    adjustableRunTime;
 
-// writeInterval   0.50;
-writeInterval   0.01;
+writeInterval   0.50;
 
 purgeWrite      0;
 
@@ -53,11 +52,11 @@ adjustTimeStep  yes;
 //
 // maxAlphaCo      0.45;
 
-maxCo           0.48;
+maxCo           0.4825;
 
-maxAlphaCo      0.48;
+maxAlphaCo      0.4825;
 
-maxDeltaT       1;
+maxDeltaT       0.05;
 
 maxCapillaryNum 2000.0; //mu*V/sigma
 
@@ -68,17 +67,18 @@ libs (
         "libgroovyBC.so"
         "libOpenFOAM.so"
 //         "libforces.so"
+        // "libBCRheoTool.so"
     );
 
 functions
 {
-    outputForce
+        outputForce
     {
 	 functionObjectLibs ("libutilityFunctionObjects.so");
 	 type coded;
 	 name calCd;
 	 writeControl timeStep;
-        writeInterval      1;
+        writeInterval      25;
         enabled             yes;
 
 	 codeWrite
@@ -106,12 +106,24 @@ functions
         //    volSymmTensorField F(tau + symm( L + L.T() ) * etaS_- p * symmTensor::I * rho_);
         // volSymmTensorField F(tau + symm( L + L.T() ) * etaS_- p * symmTensor::I );
         volSymmTensorField F(tau + symm( L + L.T() ) * etaS_ * alphaWater + p * symmTensor::I * alphaWater );
+        volSymmTensorField FPloy( tau + symm( L + L.T() ) * etaS_ * alphaWater );
+        volSymmTensorField FVS( symm( L + L.T() ) * etaS_ * alphaWater );
+        volSymmTensorField FElastic( tau * alphaWater );
+        volSymmTensorField FPressure( p * symmTensor::I * alphaWater );
 
         //    vector Fpatch = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & F.boundaryField()[cyl] )/(etaS_ + etaP_).value();
         vector Fpatch = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & F.boundaryField()[cyl] );
+        vector FpatchPoly = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & FPloy.boundaryField()[cyl] );
+        vector FpatchPressure = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & FPressure.boundaryField()[cyl] );
+        vector FFVS = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & FVS.boundaryField()[cyl] );
+        vector FFElastic = gSum( ( -mesh().boundaryMesh()[cyl].faceAreas() ) & FElastic.boundaryField()[cyl] );
 
-           list.append(mesh().time().value());  // Time (col 0)
-           list.append(Fpatch.x());             // Cd   (col 1)
+            list.append(mesh().time().value());  // Time (col 0)
+            list.append(FpatchPoly.x());             // Cd   (col 1)
+            list.append(FpatchPressure.x());             // Cd   (col 2)
+            list.append(FFVS.x());             // Cd   (col 1)
+            list.append(FFElastic.x());             // Cd   (col 2)
+            list.append(Fpatch.x());             // Cd   (col 3)
 
           // Write data
            string comsh;
@@ -133,32 +145,59 @@ functions
 	 #};
     }
 
-    // pressureForcesSectional
-    //     {
-    //         type patchExpression;
-    //         outputControl timeStep;
-    //         enabled true;
-    //         outputInterval 10;
-    //         patches (
-    //             Cylinder      // change to your name or names of patch
-    //         );
-    //         aliases {
-    //         alpha1 alpha.water;
-    //         }
-    //         variables (
-    //         "position=0;"
-    //         "rhoFluid=1.0;"
-    //         // "nuFluid=1.0E-06;"
-    //         "pressure_force= p*rhoFluid*alpha1*normal()*area();"
-    //         // "viscous_force= -rho*nu*snGrad(U)*area();"
-    //         // "forces= pressure_force+viscous_force;"
-    //         "forces= pressure_force;"
-    //         );
-    //
-    //     // expression "( pos().z > position-3 && pos().z < position+3) ? forces : vector(0,0,0)";
-    //         expression "forces";
-    //     accumulations ( sum );
-    //     }
+    outputViscousStress
+    {
+	 functionObjectLibs ("libutilityFunctionObjects.so");
+	 type coded;
+//         type            codeStream;
+//         libs            (fieldFunctionObjects); // Required to use field-related functions
+//          functionObjectLibs ("fieldFunctionObjects.so");
+	 name writeVS;
+	 writeControl adjustableRunTime;
+     writeInterval      0.5;
+     enabled             yes;
+     
+     codeInclude
+        #{
+            #include "fvCFD.H"
+            #include "IOstreams.H"
+            #include "volFields.H"
+        #};
+
+//         codeOptions
+//         #{
+//             -I$(FOAM_SRC)/finiteVolume/lnInclude
+//             -I$(FOAM_SRC)/meshTools/lnInclude
+//         #};
+// 
+//         codeLibs
+//         #{
+//             -lmeshTools
+//             -lfiniteVolume
+//         #};
+        
+	 codeWrite
+        #{
+            const volVectorField& U = mesh().lookupObject<volVectorField>("U");
+            volTensorField L(fvc::grad(U));
+            const dictionary& constDict = mesh().lookupObject<IOdictionary>("transportProperties");
+            dimensionedScalar etaS_(constDict.subDict("water").subDict("rheology").subDict("solventViscosity").subDict("constantEtaCoeffs").lookup("eta"));
+//             volSymmTensorField ViscousStress = ( symm( L + L.T() ) * etaS_  );
+            volSymmTensorField ViscousStressField
+            (
+                IOobject
+                (
+                    "ViscousStress",         // Name of the new field
+                    mesh().time().timeName(),
+                    U.mesh(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+                symm( L + L.T() ) * etaS_ 
+            );
+            ViscousStressField.write();
+        #};
+    }
 }
 
 // ************************************************************************* //
