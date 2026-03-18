@@ -1,0 +1,19 @@
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+#------------------------------------------------------------------------------
+
+# ./Allrun.pre
+
+# restore0Dir
+cp -r 0_org 0
+
+ccmToFoam mesh_directed-mesh.ccm
+createPatch -overwrite
+
+# setFields
+# the "conservative" initialization, but need to switch to OpenFOAM-v2412
+setAlphaField
+
+# interCyclicFoam
+foamRun -solver incompressibleVoF
