@@ -1,0 +1,4 @@
+cp -r 0_org 0
+blockMesh
+setFields
+foamRun -solver incompressibleVoF
