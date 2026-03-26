@@ -1,0 +1,44 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  5                                     |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+rad 0.12;
+myPi  #calc "constant::mathematical::pi";
+fluidDepth #calc "(1.0-cos($myPi / 3.0))*$rad";
+fluidUpperCoord #calc "(-1.0)*$rad+$fluidDepth";
+fluidLowerCoord #calc "(-1.0)*$rad";
+
+defaultFieldValues
+(
+    volScalarFieldValue alpha.water 0
+);
+
+regions
+(
+
+  boxToCell
+    {
+        box (0 0 $fluidLowerCoord) (1.0 $rad $fluidUpperCoord);
+        fieldValues
+        (
+            volScalarFieldValue alpha.water 1
+            // volVectorFieldValue U ( 0.112793 0 0 )
+            // volVectorFieldValue U ( 0.0 0.0 0.0 )
+        );
+    }
+);
+
+
+// ************************************************************************* //
