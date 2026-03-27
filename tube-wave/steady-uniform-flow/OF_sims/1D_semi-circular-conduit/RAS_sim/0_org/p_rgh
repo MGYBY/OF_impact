@@ -27,6 +27,8 @@ boundaryField
     {
         type            prghCyclicPressure;
         patchType       cyclic;
+        // rhoInf          -50.0;
+        // rhoInf          0.0;
         rhoInf          50.0;
     }
 
