@@ -42,7 +42,8 @@ divSchemes
     // div(rhoPhi,U)       Gauss linearUpwindV grad(U);
     // div(phi,alpha)      Gauss vanLeer;
     // div(phi,alpha)  Gauss interfaceCompression vanLeer 1;
-    div(phi,alpha)  Gauss PLIC interfaceCompression vanLeer 1;
+    // div(phi,alpha)  Gauss PLIC interfaceCompression vanLeer 1;
+    div(phi,alpha) Gauss MPLIC;
     // div(rhoPhi,U)   Gauss cellCoBlended 2 linearUpwind grad(U) 5 upwind;
     div(rhoPhi,U)   Gauss linearUpwindV grad(U);
     // div(rhoPhi,U)   Gauss upwind;
