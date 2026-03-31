@@ -20,6 +20,7 @@ cd "${0%/*}" || exit                                # Run from this directory
 runApplication decomposePar
 
 runParallel foamRun
+# foamRun -solver incompressibleVoF
 
 # runApplication reconstructPar
 
