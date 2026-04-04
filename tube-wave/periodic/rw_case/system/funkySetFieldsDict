@@ -1,0 +1,141 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.4.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+expressions
+(
+    setAlphaWater
+    {
+        field alpha.water;
+        // a disturbed state
+        // expression "pyramid(pos().y,pos().z)*sin(2.0*myPi*pos().x/lx)";
+        // the undisturbed state
+        expression "pos().z<=fluidElev?1.00:alphaMap(pos().y,pos().z)";
+        variables       (
+                        "diameter=0.10;"
+                        "normalDepth=diameter*0.2;"
+                        "lx=normalDepth*25.0;"
+                        "myPi=3.14159;"
+                        "fluidElev=-0.03;"
+        		);
+        keepPatches true;
+        lookuptables2D (
+            {
+                name alphaMap;
+                outOfBounds clamp;
+                fileName "./2d_map/alphaWaterProfile2D.table";
+            }
+        );
+    }
+
+    setUx
+    {
+        field U;
+        // a disturbed state
+        // expression "pos().z<=fluidElev? vector(uxMap(pos().y,pos().z)*(1.0+distAmp*sin(2.0*myPi*pos().x/lx)),0.0,0.0) : vector(uxMap(pos().y,pos().z),0.0,0.0)";
+        expression "vector(uxMap(pos().y,pos().z)*(1.0+distAmp*sin(2.0*myPi*pos().x/lx)),0.0,0.0)";
+        // the undisturbed state
+        // expression "vector(uxMap(pos().y,pos().z),0.0,0.0)";
+        variables       (
+                        "diameter=0.10;"
+                        "normalDepth=diameter*0.2;"
+                        "lx=normalDepth*25.0;"
+                        "myPi=3.14159;"
+                        "distAmp=0.20;"
+                        "fluidElev=-0.03;"
+        		);
+        keepPatches true;
+        lookuptables2D (
+            {
+                name uxMap;
+                outOfBounds clamp;
+                fileName "./2d_map/UxProfile2D.table";
+            }
+        );
+    }
+
+    setK
+    {
+        field k;
+        // a disturbed state
+        // expression "kMap(pos().y,pos().z)*sin(2.0*myPi*pos().x/lx)";
+        // the undisturbed state
+        expression "kMap(pos().y,pos().z)";
+        variables       (
+                        "diameter=0.10;"
+                        "normalDepth=diameter*0.2;"
+                        "lx=normalDepth*25.0;"
+                        "myPi=3.14159;"
+        		);
+        keepPatches true;
+        lookuptables2D (
+            {
+                name kMap;
+                outOfBounds clamp;
+                fileName "./2d_map/kProfile2D.table";
+            }
+        );
+    }
+
+    setNut
+    {
+        field nut;
+        // a disturbed state
+        // expression "nutMap(pos().y,pos().z)*sin(2.0*myPi*pos().x/lx)";
+        // the undisturbed state
+        expression "nutMap(pos().y,pos().z)";
+        variables       (
+                        "diameter=0.10;"
+                        "normalDepth=diameter*0.2;"
+                        "lx=normalDepth*25.0;"
+                        "myPi=3.14159;"
+        		);
+        keepPatches true;
+        lookuptables2D (
+            {
+                name nutMap;
+                outOfBounds clamp;
+                fileName "./2d_map/nutProfile2D.table";
+            }
+        );
+    }
+
+    setOmega
+    {
+        field omega;
+        // a disturbed state
+        // expression "omegaMap(pos().y,pos().z)*sin(2.0*myPi*pos().x/lx)";
+        // the undisturbed state
+        expression "omegaMap(pos().y,pos().z)";
+        variables       (
+                        "diameter=0.10;"
+                        "normalDepth=diameter*0.2;"
+                        "lx=normalDepth*25.0;"
+                        "myPi=3.14159;"
+        		);
+        keepPatches true;
+        lookuptables2D (
+            {
+                name omegaMap;
+                outOfBounds clamp;
+                fileName "./2d_map/omegaProfile2D.table";
+            }
+        );
+    }
+);
+
+
+// ************************************************************************* //
