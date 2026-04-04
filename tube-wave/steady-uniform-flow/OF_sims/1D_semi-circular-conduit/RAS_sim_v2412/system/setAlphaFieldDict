@@ -1,0 +1,39 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     |                                                 |
+|   \\  /    A nd           |                                                 |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setAlphaFieldDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+rad             0.05;
+myPi            #calc "constant::mathematical::pi";
+fluidDepth      #calc "(1.0-cos($myPi/3.0))*$rad";
+// fluidUpperCoord #calc "(-1.0)*$rad + $fluidDepth";
+fluidUpperCoord -0.025;
+
+field           alpha.water;
+type            composedFunction;
+mode            add;
+invert      true;
+
+composedFunction
+{
+    plane
+    {
+        type    plane;
+        origin  (0 0 $fluidUpperCoord);
+        normal  (0 0 1);
+    }
+}
+
+// ************************************************************************* //

@@ -1,0 +1,84 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  5                                     |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvSchemes;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+ddtSchemes
+{
+    default         Euler;
+}
+
+gradSchemes
+{
+    default         Gauss linear;
+    // limited         cellLimited Gauss linear 1;
+    limitedGrad cellLimited Gauss linear 1;
+    // default         leastSquares;
+}
+
+divSchemes
+{
+    default             none;
+    // default             Gauss linear
+    
+    // div(rhoPhi,U)   Gauss linearUpwind grad(U);
+    // div(phi,alpha)  Gauss vanLeer;
+    // div(phirb,alpha) Gauss linear;
+    // div(phi,k)      Gauss Minmod;
+    // div(phi,epsilon) Gauss Minmod;
+    // div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
+
+    // div(rhoPhi,U)       Gauss linearUpwindV grad(U);
+    div(phi,alpha)      Gauss vanLeer01;
+    // div(phi,alpha)  Gauss interfaceCompression vanLeer 1;
+    // div(phi,alpha)  Gauss PLIC interfaceCompression vanLeer 1;
+    // div(phi,alpha)  Gauss MPLIC;
+    div(rhoPhi,U)   Gauss cellCoBlended 0.49 linearUpwindV grad(U) 0.9 upwind;
+    // div(rhoPhi,U)   Gauss linearUpwindV grad(U);
+    // div(rhoPhi,U)   Gauss upwind;
+    div(phirb,alpha)    Gauss linear;
+
+    // "div\(phi,(k|omega)\)"      Gauss upwind;
+    "div\(phi,(k|omega)\)"      Gauss linearUpwind limitedGrad;
+    div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
+
+    div(phi,s)   Gauss limitedLinear 1;
+    div(phirb,s) Gauss linear;
+}
+
+laplacianSchemes
+{
+    default         Gauss linear corrected;
+}
+
+interpolationSchemes
+{
+    // default         linear;
+    default         linear;
+    interpolate(Co) localMax;
+}
+
+snGradSchemes
+{
+    default         corrected;
+}
+
+wallDist
+{
+    method          meshWave;
+}
+
+
+// ************************************************************************* //
