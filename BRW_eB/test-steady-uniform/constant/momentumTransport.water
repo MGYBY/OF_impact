@@ -1,0 +1,52 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  13
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      momentumTransport.water;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+simulationType  laminar;
+
+laminar
+{
+    model           generalisedNewtonian;
+    viscosityModel  powerLaw;
+
+    powerLawCoeffs
+    {
+        nuMax          0.0208;
+        nuMin          1e-12;
+        k              0.0011481;
+        n              0.20;
+    }
+}
+
+// laminar
+// {
+//     model           generalisedNewtonian;
+//     viscosityModel  HerschelBulkley;
+
+//     HerschelBulkleyCoeffs
+//     {
+//         // tau0 is tau_y/rho [m2/s2].
+//         // k is the kinematic Herschel-Bulkley consistency.  Its dimensions
+//         // depend on n; plain scalar input lets the model apply its expected units.
+//         tau0           0.0;
+//         k              0.0011481;
+//         n              0.20;
+//     }
+// }
+
+// physicalProperties.water still supplies the mandatory phase density and
+// base physical viscosity object required by incompressibleVoF.
+
+// ************************************************************************* //
