@@ -1,0 +1,33 @@
+EXE_INC = \
+    -IalphaContactAngle \
+    -I$(LIB_SRC)/transportModels \
+    -I$(LIB_SRC)/transportModels/incompressible/lnInclude \
+    -I$(LIB_SRC)/transportModels/interfaceProperties/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I$(FOAM_USER_SRC)/libs/libRheoTool/constitutiveEquations/lnInclude \
+    -I$(FOAM_USER_SRC)/libs/libRheoTool/gaussDefCmpwConvectionScheme/lnInclude \
+    -I$(FOAM_USER_SRC)/libs/libRheoTool/boundaryConditions/lnInclude \
+    -I$(FOAM_USER_SRC)/libs/libRheoTool/postProcessing/postProcUtils/lnInclude \
+    -I$(FOAM_USER_SRC)/libs/libRheoTool/fvmb/lnInclude \
+    -I$(FOAM_USER_SRC)/libs/libRheoTool/sparseMatrixSolvers/lnInclude \
+    -isystem$(EIGEN_RHEO) \
+    -isystem$(PETSC_DIR)/$(PETSC_ARCH)/include \
+    -isystem$(PETSC_DIR)/include \
+    $(PFLAGS) $(PINC)
+
+
+LIB_LIBS = \
+    -linterfaceProperties \
+    -lincompressibleTransportModels \
+    -lfiniteVolume \
+    -lmeshTools \
+    -L$(FOAM_USER_LIBBIN) -lconstitutiveEquations \
+    -L$(FOAM_USER_LIBBIN) -lgaussDefCmpwConvectionSchemes \
+    -L$(FOAM_USER_LIBBIN) -lBCRheoTool \
+    -L$(FOAM_USER_LIBBIN) -lpostProcessingRheoTool \
+    -L$(FOAM_USER_LIBBIN) -lfvmb \
+    -L$(FOAM_USER_LIBBIN) -lsparseMatrixSolvers \
+    -L$(PETSC_DIR)/$(PETSC_ARCH)/lib -lHYPRE \
+    -L$(PETSC_DIR)/$(PETSC_ARCH)/lib -lpetsc \
+    $(PLIBS)
