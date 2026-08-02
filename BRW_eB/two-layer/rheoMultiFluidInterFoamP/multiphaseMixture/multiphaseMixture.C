@@ -290,34 +290,56 @@ Foam::multiphaseMixture::divTauMF
 )
 {
 
-    tmp<fvVectorMatrix> tdivTauMF;  
+    tmp<fvVectorMatrix> tdivTauMF;
     tmp<volSymmTensorField> ttauMF;
-    
-                      
+
     PtrDictionary<phase>::const_iterator iter = phases_.begin();
-    
+
     volScalarField alpha = iter();
-    tdivTauMF = iter().divTauS(U,alpha);
-    fvVectorMatrix& divTauMF = tdivTauMF.ref(); 
+
+    // For a generalized-Newtonian fluid (GNF), divTauS() already contains
+    // the complete phase stress divergence based on eta(gammaDot).
+    // For a differential constitutive model, divTauS() contains the
+    // solvent/stabilisation contribution and tau() supplies the additional
+    // polymeric extra stress.
+    tdivTauMF = iter().divTauS(U, alpha);
+    fvVectorMatrix& divTauMF = tdivTauMF.ref();
 
     ttauMF = iter()*iter().tau();
     volSymmTensorField& tauMF = ttauMF.ref();
 
-      
+    // Do not add tau() a second time for a GNF.  The customized OF7+
+    // HerschelBulkley class writes the full GNF stress into tau(), so the
+    // former unconditional addition doubled that stress in the momentum
+    // equation.
+    if (iter().isGNF())
+    {
+        tauMF = dimensionedSymmTensor
+        (
+            "zero",
+            tauMF.dimensions(),
+            symmTensor::zero
+        );
+    }
+
     for (++iter; iter != phases_.end(); ++iter)
     {
         alpha = iter();
-        divTauMF += iter().divTauS(U,alpha);
-    
-        tauMF += iter()*iter().tau();        
-    }  
-    
-    
+        divTauMF += iter().divTauS(U, alpha);
+
+        if (!iter().isGNF())
+        {
+            tauMF += iter()*iter().tau();
+        }
+    }
+
     tauMF_ = tauMF;
-    if (U.time().outputTime())tauMF_.write();     
-   
-    
-    return divTauMF + fvc::div(tauMF_,"div(Sum(tau))");
+    if (U.time().outputTime())
+    {
+        tauMF_.write();
+    }
+
+    return divTauMF + fvc::div(tauMF_, "div(Sum(tau))");
 }
   
   
