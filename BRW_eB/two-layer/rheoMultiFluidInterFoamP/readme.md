@@ -19,4 +19,13 @@ $FOAM_USER_LIBBIN:\
 ${LD_LIBRARY_PATH:-}"
 ```
 
-The `HerschelBulkley.C` file is in `\src\libs\constitutiveEquations\constitutiveEqs\GNF\HerschelBulkley\` rheoTool path.
+The `HerschelBulkley.C` file is in `\src\libs\constitutiveEquations\constitutiveEqs\GNF\HerschelBulkley\` rheoTool path. Replacement commands:
+```
+RHEO_LIBS="$(
+    readlink -f \
+    "$FOAM_USER_SRC/libs/libRheoTool"
+)"
+cd "$RHEO_LIBS/constitutiveEquations"
+wclean
+wmake libso
+```
