@@ -18,3 +18,5 @@ $PETSC_DIR/$PETSC_ARCH/lib:\
 $FOAM_USER_LIBBIN:\
 ${LD_LIBRARY_PATH:-}"
 ```
+
+The `HerschelBulkley.C` file is in `\src\libs\constitutiveEquations\constitutiveEqs\GNF\HerschelBulkley\` rheoTool path.
