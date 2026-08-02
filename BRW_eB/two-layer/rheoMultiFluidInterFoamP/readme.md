@@ -29,3 +29,5 @@ cd "$RHEO_LIBS/constitutiveEquations"
 wclean
 wmake libso
 ```
+
+**TODO**: the PLIC in OF9 version does not seem to work.
