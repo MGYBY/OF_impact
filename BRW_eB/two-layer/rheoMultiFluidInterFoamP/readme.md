@@ -30,4 +30,4 @@ wclean
 wmake libso
 ```
 
-**TODO**: the PLIC in OF9 version does not seem to work.
+**TODO**: the PLIC in OF9 version does not seem to work. *(solved)*
